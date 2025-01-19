@@ -99,3 +99,4 @@ class Appointment(Appointments):
 
 class VeterinaryMgmtSys():
     pass
+
