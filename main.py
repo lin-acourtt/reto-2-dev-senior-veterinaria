@@ -149,10 +149,10 @@ class VeterinaryMgmtSys():
     pass
 
 
-# #menu Principal
-# def menu_principal():
+# #main_menu
+# def main_menu():
 #     while True:
-#         print("=========Menu Principal ===================")
+#         print("=========main menu ===================")
 #         print("1. Registrar cliente y mascota")
 #         print("2. Programacion  de cita")
 #         print("3. consultar historial de servicios")
@@ -173,5 +173,5 @@ class VeterinaryMgmtSys():
         
 
 
-# menu_principal()
+# main_menu()
 
