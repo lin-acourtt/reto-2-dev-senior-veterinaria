@@ -88,7 +88,7 @@ class Client(People):
         # super().displayContactInfo()    
         
     def displayContactInfo(self):
-        return super().displayContactInfo()    
+        super().displayContactInfo()    
         print(f"Address: {self.address}")
         print(f"Pets: {len(self.list_of_pets)} pets(s)")
     
