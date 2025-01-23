@@ -49,7 +49,7 @@ class Pets(ABC):
         pass
 
     @abstractmethod
-    def displayVeterinaryLog(self):
+    def displayVeterinaryLog(self): 
         pass
 
 class Appointments(ABC):
@@ -193,3 +193,31 @@ class VeterinaryMgmtSys():
         # [1] is a list of pets, attributes are: name, species, breed, age, owner, veterinary_log
         # [2] is a list of veterinarians, attributes are: name, contact, service_provided
         # [3] is a list of appointments for all pets, attributes are: date, time, pet, service, veterinarian
+
+
+#main menu
+def Main_Menu():
+    while True:
+        print("=========Main Menu ===================")
+        print("1. Register Customer ")
+        print("2. Register Pet")
+        print("3. Schedule an appointment")
+        print("4. Consult Service history")
+        print("5. Exit")
+        option = input("Select an option: ")
+        
+        if option =="1":
+            register_Customr()
+        elif option == "2":
+            register_Pet()
+            
+        elif option == "3":
+            Schedule_an_appointment() 
+        elif option == "4":
+            consult_Service_History()        
+        elif option == "5":
+            break        
+        else:
+            print("Invalid option. Try again")
+            
+Main_Menu()
