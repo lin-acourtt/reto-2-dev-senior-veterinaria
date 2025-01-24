@@ -91,12 +91,7 @@ class Client(People):
         super().displayContactInfo()    
         print(f"Address: {self.address}")
         print(f"Pets: {len(self.list_of_pets)} pets(s)")
-    
-    
-    
-    
-    
-    
+
     
 class Veterinarian(People):
     
@@ -115,10 +110,7 @@ class Veterinarian(People):
         # Override to include service provided information
         super().displayContactInfo()
         print(f"Service Provided: {self.service_provided}")
-        
-        
-    
-    
+
     
 class Factory():
     pass
@@ -140,8 +132,8 @@ class Appointment(Appointments):
     # displayAppointmentInfo
     def modifyAppointment(self, **kwargs):
         for key,value in kwargs.items():
-            if hasattr(self,key):
-                setattr(self,key, value)
+            if hasattr(self,key): # verifica si la instancia tiene un atributo con el nombre de la clave
+                setattr(self,key, value) # si el atributo existe se cambia su valor
 
     def displayAppointmentInfo(self):
         return f"\nDate: {self.date}\nTime: {self.time}\nPet: {self.pet}\nService: {self.service}\nVeterinarian: {self.veterinarian}"
@@ -176,7 +168,7 @@ class Pet(Pets):
 ############# Class for veterinary management system, this could use the "singleton" pattern
 
 class VeterinaryMgmtSys():
-    _instance = None
+    _instance = None # solo se puede crear una instancia de la clase. 
 
     def __new__(cls,*args,**kwargs):   
         if not cls._instance:
