@@ -263,7 +263,34 @@ class VeterinaryMgmtSys():
     
     # Option 4
     def modifyPetAppmt(self):
-        pass
+        pet_name = input("Enter the pet's name to modify its appointment: ")
+        pet_found = False
+        for pet in self.listOfPets:
+            if pet.name == pet_name:
+                pet_found = True
+                print(f"Appointments for {pet.name}:")
+                for i, appointment in enumerate(pet.veterinaryLog):
+                    print(f"{i+1}. {appointment.displayAppointmentInfo()}")
+                appointment_index = int(input("Select the appointment to modify (enter the number): ")) - 1
+                appointment_to_modify = pet.veterinaryLog[appointment_index]
+
+                # Modify the appointment
+                print("Modify appointment details:")
+                new_date = input(f"Current Date: {appointment_to_modify.date}. Enter new date (YYYY-MM-DD): ")
+                new_time = input(f"Current Time: {appointment_to_modify.time}. Enter new time (HH:MM): ")
+                new_service = input(f"Current Service: {appointment_to_modify.service}. Enter new service: ")
+                new_veterinarian = input(f"Current Veterinarian: {appointment_to_modify.veterinarian}. Enter new veterinarian: ")
+
+                new_date = datetime.strptime(new_date, "%Y-%m-%d")
+                new_time = datetime.strptime(new_time, "%H:%M").time()
+
+                # Update the appointment
+                appointment_to_modify.modifyAppointment(date=new_date, time=new_time, service=new_service, veterinarian=new_veterinarian)
+                print("Appointment modified successfully!")
+                break
+    
+        if not pet_found:
+            print("Pet not found.")
     
     # Option 5
     def cancelPetAppmt(self):
