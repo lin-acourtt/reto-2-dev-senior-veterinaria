@@ -1,10 +1,12 @@
 from abc import ABC, abstractmethod
+from datetime import datetime
 
 # Database:
-# [0] is a list of clients, attributes are: name, contact, address, list_of_pets
+# [0] is a list of clients, attributes are: id, name, contact, address, list_of_pets
 # [1] is a list of pets, attributes are: name, species, breed, age, owner, veterinary_log
 # [2] is a list of veterinarians, attributes are: name, contact, service_provided
 # [3] is a list of appointments for all pets, attributes are: date, time, pet, service, veterinarian
+# [4] is a list of services
 
 
 ############# Abstract classes (Their names are in plural, children classes will have names in singular)
@@ -23,18 +25,15 @@ class People(ABC):
     
     @abstractmethod
     def displayContactInfo(self):
-        print(f"Id people: {self.id}")
-        print(f"name people: {self.name}")
-        print(f"contact: {self.contact}")
+        pass
 
 class Pets(ABC):
     @abstractmethod
-    def __init__(self,name, species, breed, age, owner):
+    def __init__(self,name, species, breed, age):
         self.name = name
         self.species = species
         self.breed = breed
         self.age = age
-        self.owner = owner
     
     @abstractmethod
     def scheduleAppointment(self):
@@ -76,44 +75,42 @@ class Client(People):
     # constructor (the constructor should force the creation of a pet), attributes are: name, contact, address, list_of_pets
     # displayContactInfo
     
-    def __init__(self, name, contact, address, list_of_pets):
+    def __init__(self, name, contact, address):
         super().__init__(name, contact)
         self.address = address
-        self.list_of_pets = list_of_pets
-        
-        if not self.list_of_pets:
-            self.list_of_pets = []
-            
-        
-        # super().displayContactInfo()    
-        
-    def displayContactInfo(self):
-        super().displayContactInfo()    
-        print(f"Address: {self.address}")
-        print(f"Pets: {len(self.list_of_pets)} pets(s)")
+        self.list_of_pets = []
 
+    def displayContactInfo(self):
+        print(f"Id: {self.id}")
+        print(f"Name: {self.name}")
+        print(f"contact: {self.contact}")
+        print(f"address: {self.address}")
+        print(f"list of pets: {self.list_of_pets}")
+
+    def __str__(self):
+        return f"Id: {self.id} - Name: {self.name} - contact: {self.contact} - address: {self.address} - list of pets: {self.list_of_pets}"
     
+    def __repr__(self):
+        return f"Name: {self.name}"  
 class Veterinarian(People):
     
     # It should have the following methods: 
     # constructor, attributes are: name, contact, service_provided
     # displayContactInfo
     
-    def __init__(self, name, contact, service_provided):
+    def __init__(self, name, contact):
         super().__init__(name, contact)
-        self.service_provided = service_provided
-        
-        
+        self.service_provided = []
+                
         # super().displayContactInfo()    
         
     def displayContactInfo(self):
-        # Override to include service provided information
-        super().displayContactInfo()
-        print(f"Service Provided: {self.service_provided}")
+        print(f"\nName: {self.name} \nContact: {self.contact} \nService Provided: {self.service_provided}")
 
+    def __str__(self):        
+        return f"Name: {self.name} - Contact: {self.contact} - Service Provided: {self.service_provided}"
     
-class Factory():
-    pass
+ 
 class FactoryOfPeople():
     @staticmethod
     def createPerson(Type,**kwargs):
@@ -138,6 +135,9 @@ class Appointment(Appointments):
     def displayAppointmentInfo(self):
         return f"\nDate: {self.date}\nTime: {self.time}\nPet: {self.pet}\nService: {self.service}\nVeterinarian: {self.veterinarian}"
 
+    def __str__(self):
+        return f"Date: {self.date} - Time: {self.time} - Pet: {self.pet} - Service: {self.service} - Veterinarian: {self.veterinarian}"
+
 ############# Class to create pets
 
 class Pet(Pets):
@@ -148,8 +148,9 @@ class Pet(Pets):
     # displayPetInfo
     # displayVeterinaryLog
     
-    def __init__(self,name, species, breed, age, owner):
-        super().__init__(name, species, breed, age, owner)
+    def __init__(self,name, species, breed, age):
+        super().__init__(name, species, breed, age)
+        self.owner = []
         self.veterinaryLog = [] # This is going to be a list containing objects "Appointment"
 
     def scheduleAppointment(self, appointmentDetails: Appointment):
@@ -159,57 +160,313 @@ class Pet(Pets):
         del self.veterinaryLog[appointmentToDelete-1]
     
     def displayPetInfo(self):
-        return f"\nPet information: \nName: {self.name}\nSpecies: {self.species}\nBreed: {self.breed}\nAge: {self.age}\nOwner: {self.owner}"
+        print(f"Pet information: \nName: {self.name}\nSpecies: {self.species}\nBreed: {self.breed}\nAge: {self.age}\nOwner: {self.owner}")
 
     def displayVeterinaryLog(self):
         for log in self.veterinaryLog:
             print(f"\nDate: {log.date}\nTime: {log.time}\nService: {log.service}\nVeterinarian: {log.veterinarian}")
 
+    def __str__(self):
+        return f"Name: {self.name} - Species: {self.species} - Breed: {self.breed} - Age: {self.age} - Owner: {self.owner.name}"
+
+    def __repr__(self):
+        return f"{self.name}"  
+    
+class Associate():
+    @staticmethod
+    def petToOwner(client: Client, *petslist: Pet):
+        for pet in petslist:
+            client.list_of_pets.append(pet)
+
+    @staticmethod
+    def ownerToPet(pet: Pet, client: Client):
+        pet.owner = client
+
+    @staticmethod
+    def serviceToVet(vet: Veterinarian, **services):
+        for service in services:
+            vet.service_provided.append(service)
+
 ############# Class for veterinary management system, this could use the "singleton" pattern
 
 class VeterinaryMgmtSys():
-    _instance = None # solo se puede crear una instancia de la clase. 
+    _instance = None
+
+    personGenerator = FactoryOfPeople()
 
     def __new__(cls,*args,**kwargs):   
         if not cls._instance:
-            cls._instance = super(VeterinaryMgmtSys, cls)._new_(cls)
+            cls._instance = super(VeterinaryMgmtSys, cls).__new__(cls)
         return cls._instance
     
     # Remaining functions
-    def createDatabase(self,listOfClients,listOfPets,listofVeterinarians,listOfAppointments):
-        self.listOfClients = []
-        self.listOfPets = []
-        self.listofVeterinarians = []
-        self.listOfAppointments = []
-        # [0] is a list of clients, attributes are: name, contact, address, list_of_pets
+    def createDatabase(self,listOfClients,listOfPets,listofVeterinarians,listOfAppointments,listOfServices):
+        self.listOfClients = listOfClients
+        self.listOfPets = listOfPets
+        self.listofVeterinarians = listofVeterinarians
+        self.listOfAppointments = listOfAppointments
+        self.listOfServices = listOfServices
+        # [0] is a list of clients, attributes are: id, name, contact, address, list_of_pets
         # [1] is a list of pets, attributes are: name, species, breed, age, owner, veterinary_log
         # [2] is a list of veterinarians, attributes are: name, contact, service_provided
         # [3] is a list of appointments for all pets, attributes are: date, time, pet, service, veterinarian
+        # [4] is a list of services
 
+    # Option 1
+    def registerClient(self):
+        input("Please input the pet owner data: ")
+        name = input("Name: ")
+        contact = input("Phone contact: ")
+        address = input("Address: ")
 
-#main menu
-def Main_Menu():
-    while True:
-        print("=========Main Menu ===================")
-        print("1. Register Customer ")
-        print("2. Register Pet")
-        print("3. Schedule an appointment")
-        print("4. Consult Service history")
-        print("5. Exit")
-        option = input("Select an option: ")
+        registeredClient = VeterinaryMgmtSys.personGenerator.createPerson("Client",name=name,contact=contact,address=address)
+        #self.listOfClients.append(registeredClient)
+        return registeredClient
+    
+    # Option 2
+    def registerPet(self):
+        input("Please input the pet data: ")
+        name = input("Name: ")
+        species = input("Species: ")
+        breed = input("Breed: ")
+        age = input("Age: ")
+        #owner = input("Owner: ") # Change to ask if the owner is new or existing
+
+        registeredPet = Pet(name,species,breed,age)
+        #self.listOfPets.append(registeredPet)
+        return registeredPet
+
+    # Option 3
+    def schedulePetAppmt(self):
+        input("Specify appointment details -->")
+        pet = input("For which pet?: ")
+        date = input("Date (AAAA-MM-DD): ").strip()
+        time = input("Time (HH:MM): ").strip()
+        service = input("Type of service: ").strip()
+        veterinarian = input("Veterinarian: ").strip()
+
+        date = datetime.strptime(date, "%Y-%m-%d")
+        print(date)
+        # This line will convert the datetime object to a date object
+        date = datetime.date(date)
+        print(date)
         
-        if option =="1":
-            register_Customr()
-        elif option == "2":
-            register_Pet()
+        time = datetime.strptime(time, "%H:%M")
+        print(time)
+        # This line will convert the datetime object to a time object
+        time = datetime.time(time)
+        print(time)
+
+        appointment = Appointment(date, time, pet, service, veterinarian)
+        self.listOfAppointments.append(appointment)
+        return appointment
+    
+    # Option 4
+    def modifyPetAppmt(self):
+        pass
+    
+    # Option 5
+    def cancelPetAppmt(self):
+        pass
+
+    # Option 6
+    def checkPetVeterinaryLog(self):
+        pass
+    
+    #************************************+
+    # Admin Option 1
+    def __registerVet(self):
+        input("Please input the veterinarian data-->")
+        name = input("Name: ")
+        contact = input("Phone contact: ")
+        
+        registeredVet = VeterinaryMgmtSys.personGenerator.createPerson("Veterinarian",name=name,contact=contact)
+        
+        # Add service to the vet, modify this part
+        # to allow only available services
+        service_provided = input("Service: ")
+
+        addService = Associate()
+        addService.serviceToVet(registeredVet,service_provided)
+
+        self.listofVeterinarians.append(registeredVet)
+        return registeredVet
+    # Admin Option 2
+    def __removeVet(self):
+        pass
+    # Admin Option 3
+    def __displayListOfVets(self):
+        pass
+    # Admin Option 4
+    def __registerServiceType(self):
+        serviceType = input("Type the name of the service: ")
+        self.listOfServices.append(serviceType)
+        print("Service successfully registered.")
+    # Admin Option 5
+    def __removeServiceType(self):
+        pass
+    # Admin Option 6
+    def __displayListOfServices(self):
+        pass
+
+
+    def main_menu(self):
+        while True:
+            print("========= main menu ===================")
+            print("1. Register client") # This is supposed to force the registration of a pet as well
+            print("2. Register pet") # This is supposed to force the registration of its owner as well
+            print("3. Schedule appointment")
+            print("4. Modify appointment")
+            print("5. Cancel appointment")
+            print("6. Check veterinary log for a pet")
+            print("7. Admin access")
+            print("8. Exit")
+            print("9. Tests")
+            opt = input("Choose an option: ")
+            if opt =="1":
+                #1. Register client
+                client = self.registerClient()
+
+                print("You will now associate pets to this client: ")
+                # Temporary list of pets
+                tempPetList = []
+                while True:
+                    # Modify to check for existing pets
+                    pet = self.registerPet()
+                    # Associate Pet to Owner
+                    joinPetOwner = Associate()
+                    joinPetOwner.petToOwner(client,pet)
+                    # Associate Owner to Pet
+                    joinPetOwner.ownerToPet(pet,client)
+                    tempPetList.append(pet)
+                    checkpoint = input("Add more pets? (y/n): ")
+                    if checkpoint == "n":
+                        break
+                
+                self.listOfClients.append(client)
+                for tempPet in tempPetList:
+                    self.listOfPets.append(tempPet)
+            elif opt == "2":
+                #2. Register pet
+                pet = self.registerPet()
+                
+                print("You will now associate an owner to this pet: ")
+                
+                # Modify to check for existing owners
+                client = self.registerClient()
+                # Associate Owner to Pet
+                joinPetOwner = Associate()
+                joinPetOwner.ownerToPet(pet,client)
+                # Associate Pet to Owner
+                joinPetOwner.petToOwner(client,pet)
+                    
+                self.listOfClients.append(client)
+                self.listOfPets.append(pet)
+                
+            elif opt == "3":
+                #3. Schedule appointment
+                self.schedulePetAppmt()
+                pass   
+            elif opt == "4":
+                #4. Modify appointment
+                self.modifyPetAppmt()
+                pass
+            elif opt == "5":
+                #5. Cancel appointment
+                self.cancelPetAppmt()
+                pass     
+            elif opt == "6":
+                #6. Check veterinary log for a pet
+                self.checkPetVeterinaryLog()
+                pass    
+            elif opt == "7":
+                #7. Admin access
+
+                # Request for password
+                pw = input("Enter the password: ")
+                if pw == "dev-senior":
+                    while True:
+                        print("*** Admin menu ***")
+                        print("1. Register veterinarian")
+                        print("2. Remove veterinarian")
+                        print("3. Display list of veterinarians")
+                        print("4. Register type of service")
+                        print("5. Remove type of service")
+                        print("6. Display list of services")
+                        print("5. Return")
+                        admin_opt = input("Choose your admin option: ")
+                        if admin_opt == "1":
+                            #1. Register veterinarian
+                            self.__registerVet()
+                        elif admin_opt == "2":
+                            # 2. Remove veterinarian
+                            self.__removeVet()
+                        elif admin_opt == "3":
+                            #3. Display list of veterinarians
+                            self.__displayListOfVets()
+                        elif admin_opt == "4":
+                            #4. Register type of service
+                            self.__registerServiceType()
+                        elif admin_opt == "5":
+                            #5. Remove type of service
+                            self.__removeServiceType()
+                        elif admin_opt == "6":
+                            #6. Display list of services
+                            self.__displayListOfServices()
+                        elif admin_opt == "7":
+                            #5. Return
+                            break
+                        else:
+                            print("Invalid option.")
+                else:
+                    print("\nIncorrect password")
+                    print("Press Enter to continue.")
+                    continue
+            elif opt == "8":
+                #8. Exit
+                print("Thanks for using this service.")
+                break    
+            elif opt == "9":
+                self.tests()
+            else:
+                print("Option is not valid, please try again.")
+    
+    
+    def tests(self):
+        print("Registered data")
+        print("----------")
+        print("Clients")
+        for client in self.listOfClients:
+            print(client)
+        print("----------")
+        print("Pets")
+        for pet in self.listOfPets:
+            print(pet)
+        print("----------")
+        print("Veterinarians")
+        for vet in self.listofVeterinarians:
+            print(vet)
+        print("----------")
+        print("Appointments")
+        for appointment in self.listOfAppointments:
+            print(appointment) 
+        print("----------")
+        print("Services")
+        for service in self.listOfServices:
+            print(service)
+
+if __name__ == "__main__":
+
+    # Create the object for the management system
+    veterinaryManagementSys = VeterinaryMgmtSys()
+
+    # Create database for the management system (empty for now)
+    veterinaryManagementSys.createDatabase([],[],[],[],[])
+    
+    veterinaryManagementSys.main_menu()
             
-        elif option == "3":
-            Schedule_an_appointment() 
-        elif option == "4":
-            consult_Service_History()        
-        elif option == "5":
-            break        
-        else:
-            print("Invalid option. Try again")
-            
-Main_Menu()
+        
+
+
+# main_menu()
+
