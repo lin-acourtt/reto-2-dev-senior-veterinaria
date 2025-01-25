@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
 from datetime import datetime
+import os.path
+import pickle
 
 # Database:
 # [0] is a list of clients, attributes are: id, name, contact, address, list_of_pets
@@ -110,6 +112,8 @@ class Veterinarian(People):
     def __str__(self):        
         return f"Name: {self.name} - Contact: {self.contact} - Service Provided: {self.service_provided}"
     
+    def __repr__(self):
+        return self.name
  
 class FactoryOfPeople():
     @staticmethod
@@ -133,10 +137,13 @@ class Appointment(Appointments):
                 setattr(self,key, value) # si el atributo existe se cambia su valor
 
     def displayAppointmentInfo(self):
-        return f"\nDate: {self.date}\nTime: {self.time}\nPet: {self.pet}\nService: {self.service}\nVeterinarian: {self.veterinarian}"
+        return f"\nDate: {self.date}\nTime: {self.time}\nPet: {self.pet.name}\nService: {self.service}\nVeterinarian: {self.veterinarian.name}"
 
     def __str__(self):
-        return f"Date: {self.date} - Time: {self.time} - Pet: {self.pet} - Service: {self.service} - Veterinarian: {self.veterinarian}"
+        return f"Date: {self.date} - Time: {self.time} - Pet: {self.pet.name} - Service: {self.service} - Veterinarian: {self.veterinarian.name}"
+
+    def __repr__(self):
+        return f"Date: {self.date} - Time: {self.time} - Service: {self.service} - Veterinarian: {self.veterinarian.name}"
 
 ############# Class to create pets
 
@@ -167,7 +174,7 @@ class Pet(Pets):
             print(f"\nDate: {log.date}\nTime: {log.time}\nService: {log.service}\nVeterinarian: {log.veterinarian}")
 
     def __str__(self):
-        return f"Name: {self.name} - Species: {self.species} - Breed: {self.breed} - Age: {self.age} - Owner: {self.owner.name}"
+        return f"Name: {self.name} - Species: {self.species} - Breed: {self.breed} - Age: {self.age} - Owner: {self.owner.name} \nVeterinary Log: {self.veterinaryLog}"
 
     def __repr__(self):
         return f"{self.name}"  
@@ -183,8 +190,8 @@ class Associate():
         pet.owner = client
 
     @staticmethod
-    def serviceToVet(vet: Veterinarian, **services):
-        for service in services:
+    def serviceToVet(vet: Veterinarian, *services):
+        for service in services[0]:
             vet.service_provided.append(service)
 
 ############# Class for veterinary management system, this could use the "singleton" pattern
@@ -239,27 +246,56 @@ class VeterinaryMgmtSys():
     # Option 3
     def schedulePetAppmt(self):
         input("Specify appointment details -->")
-        pet = input("For which pet?: ")
-        date = input("Date (AAAA-MM-DD): ").strip()
-        time = input("Time (HH:MM): ").strip()
-        service = input("Type of service: ").strip()
-        veterinarian = input("Veterinarian: ").strip()
-
-        date = datetime.strptime(date, "%Y-%m-%d")
-        print(date)
-        # This line will convert the datetime object to a date object
-        date = datetime.date(date)
-        print(date)
+        pet = input("For which pet?: ").strip()
+        owner = input("Owner: ").strip()
         
-        time = datetime.strptime(time, "%H:%M")
-        print(time)
-        # This line will convert the datetime object to a time object
-        time = datetime.time(time)
-        print(time)
+        #Generate a list of pets and their owners
+        petsAndOwnerRelation = False
+        while petsAndOwnerRelation == False:
+            for indexPet, memberpet in enumerate(self.listOfPets):
+                if (pet.lower() == memberpet.name.lower()) and (owner.lower() == memberpet.owner.name.lower()):
+                    petsAndOwnerRelation = True
+                    break
+        
+        # This should be a try/except, maybe?
+        if petsAndOwnerRelation == True:
+            # Continue taking the information for the appointment
+            date = input("Date (AAAA-MM-DD): ").strip()
+            time = input("Time (HH:MM): ").strip()
+            
+            date = datetime.strptime(date, "%Y-%m-%d")
+            # This line will convert the datetime object to a date object
+            date = datetime.date(date)
+            
+            time = datetime.strptime(time, "%H:%M")
+            # This line will convert the datetime object to a time object
+            time = datetime.time(time)
 
-        appointment = Appointment(date, time, pet, service, veterinarian)
-        self.listOfAppointments.append(appointment)
-        return appointment
+            print("Select a service:")
+            for indexService, availableServices in enumerate(self.listOfServices):
+                print(f"{indexService+1}. {availableServices}")
+            
+            service = self.listOfServices[int(input("Type of service (enter the number): ").strip())-1]
+            
+            # Find veterinaries that match this service
+            availableVets = []
+            for indexVet, vet in enumerate(self.listofVeterinarians):
+                if service in vet.service_provided:
+                    availableVets.append([indexVet,vet])
+
+            print("Select a veterinarian:")
+            for indexAvaVet, vet in enumerate(availableVets):
+                print(f"{indexAvaVet+1}. {vet[1].name}")
+            
+            indexVetInput = int(input("Vet (enter the number): ").strip())-1
+            veterinarian = availableVets[indexVetInput][1]
+
+            appointment = Appointment(date, time, self.listOfPets[indexPet], service, veterinarian)
+            self.listOfPets[indexPet].veterinaryLog.append(appointment)
+            self.listOfAppointments.append(appointment)
+            return appointment
+        else:
+            print("Pet and owner are not related.")
     
     # Option 4
     def modifyPetAppmt(self):
@@ -311,7 +347,13 @@ class VeterinaryMgmtSys():
         
         # Add service to the vet, modify this part
         # to allow only available services
-        service_provided = input("Service: ")
+        service_provided = []
+        while True:
+            service = input("Service: ")
+            service_provided.append(service)
+            checkpoint = input("Keep adding services? (y/n): ")
+            if checkpoint == "n":
+                break
 
         addService = Associate()
         addService.serviceToVet(registeredVet,service_provided)
@@ -420,7 +462,7 @@ class VeterinaryMgmtSys():
                         print("4. Register type of service")
                         print("5. Remove type of service")
                         print("6. Display list of services")
-                        print("5. Return")
+                        print("7. Return")
                         admin_opt = input("Choose your admin option: ")
                         if admin_opt == "1":
                             #1. Register veterinarian
@@ -488,7 +530,14 @@ if __name__ == "__main__":
     veterinaryManagementSys = VeterinaryMgmtSys()
 
     # Create database for the management system (empty for now)
-    veterinaryManagementSys.createDatabase([],[],[],[],[])
+    if os.path.exists("veterinary_database.txt"):
+        f = open("veterinary_database.txt","rb")
+        database = pickle.load(f)
+        print("Database imported")
+        veterinaryManagementSys.createDatabase(database[0],database[1],database[2],database[3],[4])
+        f.close()
+    else:
+        veterinaryManagementSys.createDatabase([],[],[],[],[])
     
     veterinaryManagementSys.main_menu()
             
