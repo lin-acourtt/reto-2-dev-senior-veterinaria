@@ -270,6 +270,31 @@ class VeterinaryMgmtSys():
             time = datetime.strptime(time, "%H:%M")
             # This line will convert the datetime object to a time object
             time = datetime.time(time)
+            
+            
+            """    
+        if petsAndOwnerRelation == True:
+
+        date = input("Date (AAAA-MM-DD): ").strip()
+
+
+        try:
+            date = datetime.strptime(date, "%Y-%m-%d")
+            date = datetime.date(date)  
+        except ValueError:
+            print("Invalid date format. Please enter the date in the format YYYY-MM-DD.")
+            return
+        
+    
+        while True:
+            time = input("Time (HH:MM): ").strip()
+            try:
+                time = datetime.strptime(time, "%H:%M")
+                time = datetime.time(time)  
+                break 
+            except ValueError:
+                print("Invalid time format. Please enter the time in the format HH:MM.")
+                """
 
             print("Select a service:")
             for indexService, availableServices in enumerate(self.listOfServices):
