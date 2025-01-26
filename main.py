@@ -318,15 +318,15 @@ class VeterinaryMgmtSys():
                 new_veterinarian_name = input(f"Current Veterinarian: {appointment_to_modify.veterinarian}. Enter new veterinarian: ")
 
             # Ensure new veterinarian exists
-            new_veterinarian = None
-            for vet in self.listofVeterinarians:
-                if vet.name.lower() == new_veterinarian_name.lower():
-                    new_veterinarian = vet
-                    break
+                new_veterinarian = None
+                for vet in self.listofVeterinarians:
+                    if vet.name.lower() == new_veterinarian_name.lower():
+                        new_veterinarian = vet
+                        break
 
-            if not new_veterinarian:
-                print("Error: Veterinarian not found.")
-                return                
+                if not new_veterinarian:
+                    print("Error: Veterinarian not found.")
+                    return                
                 
 
                 new_date = datetime.strptime(new_date, "%Y-%m-%d")
@@ -414,10 +414,31 @@ class VeterinaryMgmtSys():
         print("Service successfully registered.")
     # Admin Option 5
     def __removeServiceType(self):
-        pass
+        print("Available services:")
+        if not self.listOfServices:
+            print("No services available to remove.")
+            return
+        
+        for index, service in enumerate(self.listOfServices, start=1):
+            print(f"{index}. {service}")
+
+        try:
+            service_index = int(input("Enter the number of the service to remove: ")) - 1
+            if 0 <= service_index < len(self.listOfServices):
+                removed_service = self.listOfServices.pop(service_index)
+                print(f"Service '{removed_service}' has been successfully removed.")
+            else:
+                print("Invalid selection.")
+        except ValueError:
+            print("Invalid input. Please enter a valid number.")
     # Admin Option 6
     def __displayListOfServices(self):
-        pass
+        print("List of available services:")
+        if not self.listOfServices:
+            print("No services available.")
+        else:
+            for service in self.listOfServices:
+                print(f"- {service}")
 
 
     def main_menu(self):
