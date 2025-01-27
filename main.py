@@ -326,6 +326,7 @@ class VeterinaryMgmtSys():
     def modifyPetAppmt(self):
         pet_name = input("Enter the pet's name to modify its appointment: ")
         pet_found = False
+        
         for pet in self.listOfPets:
             if pet.name == pet_name:
                 pet_found = True
@@ -348,25 +349,44 @@ class VeterinaryMgmtSys():
 
                     # Modify the appointment
                     print("Modify appointment details:")
-                    new_date = input(f"Current Date: {appointment_to_modify.date}. Enter new date (YYYY-MM-DD): ")
-                    new_time = input(f"Current Time: {appointment_to_modify.time}. Enter new time (HH:MM): ")
-                    new_service = input(f"Current Service: {appointment_to_modify.service}. Enter new service: ")
-                    new_veterinarian_name = input(f"Current Veterinarian: {appointment_to_modify.veterinarian}. Enter new veterinarian: ")
-
+                    
+                    #modify date
+                    new_date = input(f"Current Date: {appointment_to_modify.date}. Enter new date (YYYY-MM-DD) or preess Enter to Keep: ")
+                    if new_date == "":
+                        new_date = appointment_to_modify.date 
+                    else:
+                        new_date = datetime.strptime(new_date, "%y-%m-%d")    
+                        
+                    #modifi time
+                    new_time = input(f"Current Time: {appointment_to_modify.time}. Enter new time (HH:MM) or prees Enter to keep: ")
+                    if new_time =="": # no input keept the same
+                        new_time = appointment_to_modify.time
+                    else:    
+                        new_time = datetime.strptime(new_time, "%H:%M").time()
+                    
+                    #modify service
+                    new_service = input(f"Current Service: {appointment_to_modify.service}. Enter new service or press Enter to keep: ")
+                    if new_service =="":
+                        new_service = appointment_to_modify.service
+                        
+                    #modify veterinarian
+                    new_veterinarian_name = input(f"Current Veterinarian: {appointment_to_modify.veterinarian}. Enter new veterinaria or press Enter to Keep: ")
+                    if new_veterinarian_name == "":
+                        new_veterinarian = appointment_to_modify.veterinarian
+                    else:    
             # Ensure new veterinarian exists
-                    new_veterinarian = None
-                    for vet in self.listofVeterinarians:
-                        if vet.name.lower() == new_veterinarian_name.lower():
-                            new_veterinarian = vet
-                            break
+                        new_veterinarian = None
+                        for vet in self.listofVeterinarians:
+                            if vet.name.lower() == new_veterinarian_name.lower():
+                                new_veterinarian = vet
+                                break
 
-                    if not new_veterinarian:
-                        print("Error: Veterinarian not found.")
-                        return                
+                        if not new_veterinarian:
+                            print("Error: Veterinarian not found.")
+                            return                
 
-
-                    new_date = datetime.strptime(new_date, "%Y-%m-%d")
-                    new_time = datetime.strptime(new_time, "%H:%M").time()
+                    # new_date = datetime.strptime(new_date, "%Y-%m-%d")
+                    # new_time = datetime.strptime(new_time, "%H:%M").time()
 
                     # Update the appointment
                     appointment_to_modify.modifyAppointment(date=new_date, time=new_time, service=new_service, veterinarian=new_veterinarian)
