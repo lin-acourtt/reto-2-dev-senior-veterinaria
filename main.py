@@ -1,7 +1,5 @@
 from abc import ABC, abstractmethod
 from datetime import datetime
-import os.path
-import pickle
 
 # Database:
 # [0] is a list of clients, attributes are: id, name, contact, address, list_of_pets
@@ -241,56 +239,27 @@ class VeterinaryMgmtSys():
     # Option 3
     def schedulePetAppmt(self):
         input("Specify appointment details -->")
-        pet = input("For which pet?: ").strip()
-        owner = input("Owner: ").strip()
+        pet = input("For which pet?: ")
+        date = input("Date (AAAA-MM-DD): ").strip()
+        time = input("Time (HH:MM): ").strip()
+        service = input("Type of service: ").strip()
+        veterinarian = input("Veterinarian: ").strip()
+
+        date = datetime.strptime(date, "%Y-%m-%d")
+        print(date)
+        # This line will convert the datetime object to a date object
+        date = datetime.date(date)
+        print(date)
         
-        #Generate a list of pets and their owners
-        petsAndOwnerRelation = False
-        while petsAndOwnerRelation == False:
-            for indexPet, memberpet in enumerate(self.listOfPets):
-                if (pet.lower() == memberpet.name.lower()) and (owner.lower() == memberpet.owner.name.lower()):
-                    petsAndOwnerRelation = True
-                    break
-        
-        # This should be a try/except, maybe?
-        if petsAndOwnerRelation == True:
-            # Continue taking the information for the appointment
-            date = input("Date (AAAA-MM-DD): ").strip()
-            time = input("Time (HH:MM): ").strip()
-            
-            date = datetime.strptime(date, "%Y-%m-%d")
-            # This line will convert the datetime object to a date object
-            date = datetime.date(date)
-            
-            time = datetime.strptime(time, "%H:%M")
-            # This line will convert the datetime object to a time object
-            time = datetime.time(time)
+        time = datetime.strptime(time, "%H:%M")
+        print(time)
+        # This line will convert the datetime object to a time object
+        time = datetime.time(time)
+        print(time)
 
-            print("Select a service:")
-            for indexService, availableServices in enumerate(self.listOfServices):
-                print(f"{indexService+1}. {availableServices}")
-            
-            service = self.listOfServices[int(input("Type of service (enter the number): ").strip())-1]
-            
-            # Find veterinaries that match this service
-            availableVets = []
-            for indexVet, vet in enumerate(self.listofVeterinarians):
-                if service in vet.service_provided:
-                    availableVets.append([indexVet,vet])
-
-            print("Select a veterinarian:")
-            for indexAvaVet, vet in enumerate(availableVets):
-                print(f"{indexAvaVet+1}. {vet[1].name}")
-            
-            indexVetInput = int(input("Vet (enter the number): ").strip())-1
-            veterinarian = availableVets[indexVetInput][1]
-
-            appointment = Appointment(date, time, self.listOfPets[indexPet], service, veterinarian)
-            self.listOfPets[indexPet].veterinaryLog.append(appointment)
-            self.listOfAppointments.append(appointment)
-            return appointment
-        else:
-            print("Pet and owner are not related.")
+        appointment = Appointment(date, time, pet, service, veterinarian)
+        self.listOfAppointments.append(appointment)
+        return appointment
     
     # Option 4
     def modifyPetAppmt(self):
