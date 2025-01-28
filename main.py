@@ -112,8 +112,6 @@ class Veterinarian(People):
     def __str__(self):        
         return f"Name: {self.name} - Contact: {self.contact} - Service Provided: {self.service_provided}"
     
-    def __repr__(self):
-        return self.name
  
 class FactoryOfPeople():
     @staticmethod
@@ -137,13 +135,10 @@ class Appointment(Appointments):
                 setattr(self,key, value) # si el atributo existe se cambia su valor
 
     def displayAppointmentInfo(self):
-        return f"\nDate: {self.date}\nTime: {self.time}\nPet: {self.pet.name}\nService: {self.service}\nVeterinarian: {self.veterinarian.name}"
+        return f"\nDate: {self.date}\nTime: {self.time}\nPet: {self.pet}\nService: {self.service}\nVeterinarian: {self.veterinarian}"
 
     def __str__(self):
-        return f"Date: {self.date} - Time: {self.time} - Pet: {self.pet.name} - Service: {self.service} - Veterinarian: {self.veterinarian.name}"
-
-    def __repr__(self):
-        return f"Date: {self.date} - Time: {self.time} - Service: {self.service} - Veterinarian: {self.veterinarian.name}"
+        return f"Date: {self.date} - Time: {self.time} - Pet: {self.pet} - Service: {self.service} - Veterinarian: {self.veterinarian}"
 
 ############# Class to create pets
 
@@ -174,7 +169,7 @@ class Pet(Pets):
             print(f"\nDate: {log.date}\nTime: {log.time}\nService: {log.service}\nVeterinarian: {log.veterinarian}")
 
     def __str__(self):
-        return f"Name: {self.name} - Species: {self.species} - Breed: {self.breed} - Age: {self.age} - Owner: {self.owner.name} \nVeterinary Log: {self.veterinaryLog}"
+        return f"Name: {self.name} - Species: {self.species} - Breed: {self.breed} - Age: {self.age} - Owner: {self.owner.name}"
 
     def __repr__(self):
         return f"{self.name}"  
@@ -190,8 +185,8 @@ class Associate():
         pet.owner = client
 
     @staticmethod
-    def serviceToVet(vet: Veterinarian, *services):
-        for service in services[0]:
+    def serviceToVet(vet: Veterinarian, **services):
+        for service in services:
             vet.service_provided.append(service)
 
 ############# Class for veterinary management system, this could use the "singleton" pattern
@@ -270,31 +265,6 @@ class VeterinaryMgmtSys():
             time = datetime.strptime(time, "%H:%M")
             # This line will convert the datetime object to a time object
             time = datetime.time(time)
-            
-            
-            """    
-        if petsAndOwnerRelation == True:
-
-        date = input("Date (AAAA-MM-DD): ").strip()
-
-
-        try:
-            date = datetime.strptime(date, "%Y-%m-%d")
-            date = datetime.date(date)  
-        except ValueError:
-            print("Invalid date format. Please enter the date in the format YYYY-MM-DD.")
-            return
-        
-    
-        while True:
-            time = input("Time (HH:MM): ").strip()
-            try:
-                time = datetime.strptime(time, "%H:%M")
-                time = datetime.time(time)  
-                break 
-            except ValueError:
-                print("Invalid time format. Please enter the time in the format HH:MM.")
-                """
 
             print("Select a service:")
             for indexService, availableServices in enumerate(self.listOfServices):
@@ -465,13 +435,7 @@ class VeterinaryMgmtSys():
         
         # Add service to the vet, modify this part
         # to allow only available services
-        service_provided = []
-        while True:
-            service = input("Service: ")
-            service_provided.append(service)
-            checkpoint = input("Keep adding services? (y/n): ")
-            if checkpoint == "n":
-                break
+        service_provided = input("Service: ")
 
         addService = Associate()
         addService.serviceToVet(registeredVet,service_provided)
@@ -601,7 +565,7 @@ class VeterinaryMgmtSys():
                         print("4. Register type of service")
                         print("5. Remove type of service")
                         print("6. Display list of services")
-                        print("7. Return")
+                        print("5. Return")
                         admin_opt = input("Choose your admin option: ")
                         if admin_opt == "1":
                             #1. Register veterinarian
@@ -669,14 +633,7 @@ if __name__ == "__main__":
     veterinaryManagementSys = VeterinaryMgmtSys()
 
     # Create database for the management system (empty for now)
-    if os.path.exists("veterinary_database.txt"):
-        f = open("veterinary_database.txt","rb")
-        database = pickle.load(f)
-        print("Database imported")
-        veterinaryManagementSys.createDatabase(database[0],database[1],database[2],database[3],[4])
-        f.close()
-    else:
-        veterinaryManagementSys.createDatabase([],[],[],[],[])
+    veterinaryManagementSys.createDatabase([],[],[],[],[])
     
     veterinaryManagementSys.main_menu()
             
