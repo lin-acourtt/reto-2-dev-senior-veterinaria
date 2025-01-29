@@ -503,15 +503,36 @@ class VeterinaryMgmtSys():
         return registeredVet
     # Admin Option 2
     def __removeVet(self):
-        pass
+        print("List of Veterinarians:")
+        if not self.listofVeterinarians:
+            print("No veterinarians to remove.")
+            return
+
+        for i, vet in enumerate(self.listofVeterinarians, start=1):
+            print(f"{i}. {vet.name} - {vet.contact}")
+
+        try:
+            vet_index = int(input("Select the veterinarian to remove (enter the number): ")) - 1
+            if 0 <= vet_index < len(self.listofVeterinarians):
+                removed_vet = self.listofVeterinarians.pop(vet_index)
+                print(f"Veterinarian '{removed_vet.name}' has been successfully removed.")
+            else:
+                print("Invalid selection.")
+        except (ValueError, IndexError):
+            print("Invalid input. Select a valid veterinarian.")    
+
+
     # Admin Option 3
     def __displayListOfVets(self):
         pass
+    
     # Admin Option 4
     def __registerServiceType(self):
         serviceType = input("Type the name of the service: ")
         self.listOfServices.append(serviceType)
         print("Service successfully registered.")
+        
+        
     # Admin Option 5
     def __removeServiceType(self):
         print("Available services:")
