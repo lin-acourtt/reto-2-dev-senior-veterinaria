@@ -326,107 +326,130 @@ class VeterinaryMgmtSys():
     def modifyPetAppmt(self):
         pet_name = input("Enter the pet's name to modify its appointment: ")
         pet_found = False
-        
-        for pet in self.listOfPets:
-            if pet.name == pet_name:
-                pet_found = True
-                
-                # Verificar si el dueño que intenta modificar la cita es el propietario de la mascota
-                owner_name = input(f"Enter the owner's name for {pet.name}: ").strip()
 
-                if owner_name.lower() != pet.owner.name.lower():
-                    print(f"Error: {owner_name} is not the owner of {pet.name}. You cannot modify this appointment.")
-                    return  # Salir si el dueño no es correcto
-            
-                print(f"Appointments for {pet.name}:")
-                for i, appointment in enumerate(pet.veterinaryLog):
-                    print(f"{i+1}. {appointment.displayAppointmentInfo()}")
-                    
-                    
-                try:    
-                    appointment_index = int(input("Select the appointment to modify (enter the number): ")) - 1
-                    appointment_to_modify = pet.veterinaryLog[appointment_index]
+        # Buscar mascotas con el mismo nombre
+        pets_with_same_name = [pet for pet in self.listOfPets if pet.name.lower() == pet_name.lower()]
 
-                    # Modify the appointment
-                    print("Modify appointment details:")
-                    
-                    #modify date
-                    new_date = input(f"Current Date: {appointment_to_modify.date}. Enter new date (YYYY-MM-DD) or preess Enter to Keep: ")
-                    if new_date == "":
-                        new_date = appointment_to_modify.date 
-                    else:
-                        new_date = datetime.strptime(new_date, "%y-%m-%d")    
-                        
-                    #modifi time
-                    new_time = input(f"Current Time: {appointment_to_modify.time}. Enter new time (HH:MM) or prees Enter to keep: ")
-                    if new_time =="": # no input keept the same
-                        new_time = appointment_to_modify.time
-                    else:    
-                        new_time = datetime.strptime(new_time, "%H:%M").time()
-                    
-                    #modify service
-                    new_service = input(f"Current Service: {appointment_to_modify.service}. Enter new service or press Enter to keep: ")
-                    if new_service =="":
-                        new_service = appointment_to_modify.service
-                        
-                    #modify veterinarian
-                    new_veterinarian_name = input(f"Current Veterinarian: {appointment_to_modify.veterinarian}. Enter new veterinaria or press Enter to Keep: ")
-                    if new_veterinarian_name == "":
-                        new_veterinarian = appointment_to_modify.veterinarian
-                    else:    
-            # Ensure new veterinarian exists
-                        new_veterinarian = None
-                        for vet in self.listofVeterinarians:
-                            if vet.name.lower() == new_veterinarian_name.lower():
-                                new_veterinarian = vet
-                                break
+        if not pets_with_same_name:
+            print("No pets found with that name.")
+            return
 
-                        if not new_veterinarian:
-                            print("Error: Veterinarian not found.")
-                            return                
+        # Si hay más de una mascota con el mismo nombre, preguntamos por el dueño
+        if len(pets_with_same_name) > 1:
+            owner_name = input("Multiple pets with the same name found. Please enter the owner's name: ").strip()
 
-                    # new_date = datetime.strptime(new_date, "%Y-%m-%d")
-                    # new_time = datetime.strptime(new_time, "%H:%M").time()
+            # Filtrar las mascotas que coinciden con el dueño proporcionado
+            pets_with_owner = [pet for pet in pets_with_same_name if pet.owner.name.lower() == owner_name.lower()]
 
-                    # Update the appointment
-                    appointment_to_modify.modifyAppointment(date=new_date, time=new_time, service=new_service, veterinarian=new_veterinarian)
-                    print("Appointment modified successfully!")
-                except (ValueError, IndexError):
-                    print("Invalid input. Please make sure to select a valid appointment number.")    
-                break
-    
-        if not pet_found:
-            print("Pet not found.")
+            if not pets_with_owner:
+                print(f"No pets found for owner {owner_name}.")
+                return
+        else:
+            # Si solo hay una mascota con ese nombre, usamos directamente esa mascota
+            pets_with_owner = pets_with_same_name
+
+        # Ahora, pets_with_owner debería contener las mascotas correctas
+        pet = pets_with_owner[0]
+        print(f"Selected pet: {pet.name} (Owner: {pet.owner.name})")
+
+        # Verificar si el dueño que intenta modificar la cita es el propietario de la mascota
+        owner_name = input(f"Enter the owner's name for {pet.name}: ").strip()
+
+        if owner_name.lower() != pet.owner.name.lower():
+            print(f"Error: {owner_name} is not the owner of {pet.name}. You cannot modify this appointment.")
+            return  # Salir si el dueño no es correcto
+
+        print(f"Appointments for {pet.name}:")
+        if not pet.veterinaryLog:
+            print("No appointments found.")
+            return
+
+        for i, appointment in enumerate(pet.veterinaryLog):
+            print(f"{i + 1}. {appointment.displayAppointmentInfo()}")
+
+        try:
+            appointment_index = int(input("Select the appointment to modify (enter the number): ")) - 1
+            appointment_to_modify = pet.veterinaryLog[appointment_index]
+
+            # Modify the appointment
+            print("Modify appointment details:")
+
+            # Modify date
+            new_date = input(f"Current Date: {appointment_to_modify.date}. Enter new date (YYYY-MM-DD) or press Enter to Keep: ")
+            if new_date == "":
+                new_date = appointment_to_modify.date 
+            else:
+                new_date = datetime.strptime(new_date, "%Y-%m-%d").date()
+
+            # Modify time
+            new_time = input(f"Current Time: {appointment_to_modify.time}. Enter new time (HH:MM) or press Enter to keep: ")
+            if new_time == "":  # No input, keep the same
+                new_time = appointment_to_modify.time
+            else:
+                new_time = datetime.strptime(new_time, "%H:%M").time()
+
+            # Modify service
+            new_service = input(f"Current Service: {appointment_to_modify.service}. Enter new service or press Enter to keep: ")
+            if new_service == "":
+                new_service = appointment_to_modify.service
+
+            # Modify veterinarian
+            new_veterinarian_name = input(f"Current Veterinarian: {appointment_to_modify.veterinarian.name}. Enter new veterinarian or press Enter to Keep: ")
+            if new_veterinarian_name == "":
+                new_veterinarian = appointment_to_modify.veterinarian
+            else:
+                # Ensure new veterinarian exists
+                new_veterinarian = None
+                for vet in self.listofVeterinarians:
+                    if vet.name.lower() == new_veterinarian_name.lower():
+                        new_veterinarian = vet
+                        break
+
+                if not new_veterinarian:
+                    print("Error: Veterinarian not found.")
+                    return
+
+            # Update the appointment
+            appointment_to_modify.modifyAppointment(date=new_date, time=new_time, service=new_service, veterinarian=new_veterinarian)
+            print("Appointment modified successfully!")
+        except (ValueError, IndexError):
+            print("Invalid input. Please make sure to select a valid appointment number.")    
+
+        # Fin de la función
     
     # Option 5
     def cancelPetAppmt(self):
         pet_name = input("Enter the pet's name to cancel its appointment: ")
         pet_found = False
         for pet in self.listOfPets:
-            if pet.name == pet_name:
+            if pet.name.lower() == pet_name.lower():  
                 pet_found = True
-                
                 owner_name = input(f"Enter the owner's name for {pet.name}: ").strip()
-                
+
                 if owner_name.lower() != pet.owner.name.lower():
                     print(f"Error: {owner_name} is not the owner of {pet.name}. You cannot cancel this appointment.")
-                    return 
-                
-                
+                    return
+
                 print(f"Appointments for {pet.name}:")
+                if not pet.veterinaryLog:
+                    print("No appointments to cancel.")
+                    return
+
                 for i, appointment in enumerate(pet.veterinaryLog):
-                    print(f"{i+1}. {appointment.displayAppointmentInfo()}")
-                    
-                try:    
+                    print(f"{i + 1}. {appointment.displayAppointmentInfo()}")
+
+                try:
                     appointment_index = int(input("Select the appointment to cancel (enter the number): ")) - 1
-                    # Delete the appointment from the veterinary log
-                    pet.cancelAppointment(appointment_index + 1)
-                    print("Appointment cancelled successfully!")
+                    if 0 <= appointment_index < len(pet.veterinaryLog):
+                        pet.cancelAppointment(appointment_index + 1)
+                        print("Appointment cancelled successfully!")
+                    else:
+                        print("Invalid selection.")
                 except (ValueError, IndexError):
-                    print("Input invalid. Select a valid appointment number")    
+                    print("Invalid input. Select a valid appointment number.")
 
                 break
-    
+
         if not pet_found:
             print("Pet not found.")
 
