@@ -463,7 +463,7 @@ class VeterinaryMgmtSys():
             # If there are not available services, the user will be forced to create one. 
             self.__registerServiceType()
         
-        ##L: Modify to make it dynamic
+        ##L: Modify to make it dynamic.
         # The list of available services is displayed
         print("\nList of available services:")
         for indexService, availableServices in enumerate(self.listOfServices):
