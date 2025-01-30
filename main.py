@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod # To create interfaces
 from datetime import datetime       # To manage date and time
 import os.path                      # To check if the database file exists in the folder
 import pickle                       # To load/save database
+from getpass import getpass         # To type passwords
 
 # The dabase is file: veterinary_database.txt, it contains a list called "database"
 # Position in database:
@@ -68,13 +69,11 @@ class Appointments(ABC):
 # Class used to describe clients
 class Client(People):
     
-    id_counter = 1
-    def __init__(self, name, contact, address): # Constructor
-        self.id = People.id_counter # int
+    def __init__(self, name, contact, address, id): # Constructor
         self.name = name # string
         self.contact = contact # string
         self.address = address # string
-        Client.id_counter += 1 # This will increase its value for the next client that will be created
+        self.id = id # int
         self.list_of_pets = [] # This list contains object of type "Pet"
 
     def displayContactInfo(self): # Display client's information
@@ -83,6 +82,9 @@ class Client(People):
         print(f"Contact: {self.contact}")
         print(f"Address: {self.address}")
         print(f"List of pets: {self.list_of_pets}") # Method __repr__ is defined in "Pet" to display only the name in this list
+
+    def addPet(self,newPet): # Append pet to list of pets
+        self.list_of_pets.append(newPet)
 
     def __str__(self): # Used to display the client's information when calling "print()" on the object
         return f"ID: {self.id} - Name: {self.name} - Contact: {self.contact} - Address: {self.address} - List of pets: {self.list_of_pets}"
@@ -100,6 +102,9 @@ class Veterinarian(People):
         
     def displayContactInfo(self): # Display veterinarian information
         print(f"\nName: {self.name} \nContact: {self.contact} \nService Provided: {self.service_provided}")
+
+    def addService(self,new_service): # Add service to Vet
+        self.service_provided.append(new_service)
 
     def __str__(self): # Used to display the vet's information when calling "print()" on the object    
         return f"Name: {self.name} - Contact: {self.contact} - Service Provided: {self.service_provided}"
@@ -139,10 +144,10 @@ class Appointment(Appointments):
         return f"\nDate: {self.date}\nTime: {self.time}\nPet: {self.pet.name}\nService: {self.service}\nVeterinarian: {self.veterinarian.name}"
 
     def __str__(self): # Used to display the appointment's information when calling "print()" on the object    
-        return f"Date: {self.date} - Time: {self.time} - Pet: {self.pet.name} - Service: {self.service} - Veterinarian: {self.veterinarian.name}"
+        return f"Date: {self.date} - Time: {self.time} - Pet: {self.pet.name} - Service: {self.service} - Veterinarian: {self.veterinarian.name}\n"
 
     def __repr__(self): # Used to display the appointment's details, when the list contains "Appointment" objects
-        return f"Date: {self.date} - Time: {self.time} - Service: {self.service} - Veterinarian: {self.veterinarian.name}"
+        return f"Date: {self.date} - Time: {self.time} - Service: {self.service} - Veterinarian: {self.veterinarian.name}\n"
 
 ############# Child class for "Pet"
 class Pet(Pets):
@@ -168,28 +173,19 @@ class Pet(Pets):
         for log in self.veterinaryLog:
             print([log])
             #print(f"\nDate: {log.date}\nTime: {log.time}\nService: {log.service}\nVeterinarian: {log.veterinarian}")
+    
+    def addOwner(self,newOwner): # Add owner to pet
+        if self.owner:
+            input("This pet already has an owner (Enter to return)")
+            return
+        else:
+            self.owner = newOwner
 
     def __str__(self): # Used to display the client's information when calling "print()" on the object
         return f"Name: {self.name} - Species: {self.species} - Breed: {self.breed} - Age: {self.age} - Owner: {self.owner.name} \nVeterinary Log: {self.veterinaryLog}"
 
     def __repr__(self): # Used to display the client's name in a list, when the list contains "Client"s objects
         return f"{self.name}"  
-
-# Check if this is necessary
-class Associate():
-    @staticmethod
-    def petToOwner(client: Client, *petslist: Pet):
-        for pet in petslist:
-            client.list_of_pets.append(pet)
-
-    @staticmethod
-    def ownerToPet(pet: Pet, client: Client):
-        pet.owner = client
-
-    @staticmethod
-    def serviceToVet(vet: Veterinarian, *services):
-        for service in services[0]:
-            vet.service_provided.append(service)
 
 ############# Class for veterinary management system
 
@@ -218,14 +214,18 @@ class VeterinaryMgmtSys():
         contact = input("Phone contact: ").strip()
         address = input("Address: ").strip()
 
+        if self.listOfClients:
+            id = self.listOfClients[-1].id + 1
+        else:
+            id = 1
+
         # Generate Client object (The list of pets will be updated once the pet is created)
-        registeredClient = VeterinaryMgmtSys.personGenerator.createPerson("Client",name=name,contact=contact,address=address)
+        registeredClient = VeterinaryMgmtSys.personGenerator.createPerson("Client",name=name,contact=contact,address=address,id=id)
         input("\nClient successfully registered. (Enter to continue)")
         return registeredClient
     
     def registerPet(self): # Option 2 in the main menu
-        print("\n---------------------------------------------")
-        input("Please input the pet data (Enter to continue)")
+        input("\nPlease input the pet data (Enter to continue)")
         name = input("\nPet's name: ").strip()
         species = input("Species: ").strip()
         breed = input("Breed: ").strip()
@@ -313,11 +313,11 @@ class VeterinaryMgmtSys():
         appointment = Appointment(date, time, self.listOfPets[indexPet], service, veterinarian)
         self.listOfPets[indexPet].veterinaryLog.append(appointment) # Veterinary log is updated for the pet
         self.listOfAppointments.append(appointment) # General list of appointments in updated
-        input(f"\Appointment successfully registered for pet {pet}. (Enter to continue)")
+        input(f"\nAppointment successfully registered for pet {pet}. (Enter to continue)")
         return appointment
         
     def modifyPetAppmt(self): # Option 4 in main menu
-        pet_name = input("Enter the pet's name to modify its appointment: ")
+        pet_name = input("Enter the pet's name to modify its appointment: ").strip()
         pet_found = False
         
         for pet in self.listOfPets:
@@ -337,33 +337,33 @@ class VeterinaryMgmtSys():
                     
                     
                 try:    
-                    appointment_index = int(input("Select the appointment to modify (enter the number): ")) - 1
+                    appointment_index = int(input("Select the appointment to modify (enter the number): ").strip()) - 1
                     appointment_to_modify = pet.veterinaryLog[appointment_index]
 
                     # Modify the appointment
                     print("Modify appointment details:")
                     
                     #modify date
-                    new_date = input(f"Current Date: {appointment_to_modify.date}. Enter new date (YYYY-MM-DD) or preess Enter to Keep: ")
+                    new_date = input(f"Current Date: {appointment_to_modify.date}. Enter new date (YYYY-MM-DD) or preess Enter to Keep: ").strip()
                     if new_date == "":
                         new_date = appointment_to_modify.date 
                     else:
                         new_date = datetime.strptime(new_date, "%y-%m-%d")    
                         
                     #modifi time
-                    new_time = input(f"Current Time: {appointment_to_modify.time}. Enter new time (HH:MM) or prees Enter to keep: ")
+                    new_time = input(f"Current Time: {appointment_to_modify.time}. Enter new time (HH:MM) or prees Enter to keep: ").strip()
                     if new_time =="": # no input keept the same
                         new_time = appointment_to_modify.time
                     else:    
                         new_time = datetime.strptime(new_time, "%H:%M").time()
                     
                     #modify service
-                    new_service = input(f"Current Service: {appointment_to_modify.service}. Enter new service or press Enter to keep: ")
+                    new_service = input(f"Current Service: {appointment_to_modify.service}. Enter new service or press Enter to keep: ").strip()
                     if new_service =="":
                         new_service = appointment_to_modify.service
                         
                     #modify veterinarian
-                    new_veterinarian_name = input(f"Current Veterinarian: {appointment_to_modify.veterinarian}. Enter new veterinaria or press Enter to Keep: ")
+                    new_veterinarian_name = input(f"Current Veterinarian: {appointment_to_modify.veterinarian}. Enter new veterinaria or press Enter to Keep: ").strip()
                     if new_veterinarian_name == "":
                         new_veterinarian = appointment_to_modify.veterinarian
                     else:    
@@ -394,7 +394,7 @@ class VeterinaryMgmtSys():
     
     # Option 5
     def cancelPetAppmt(self):
-        pet_name = input("Enter the pet's name to cancel its appointment: ")
+        pet_name = input("Enter the pet's name to cancel its appointment: ").strip()
         pet_found = False
         for pet in self.listOfPets:
             if pet.name == pet_name:
@@ -412,7 +412,7 @@ class VeterinaryMgmtSys():
                     print(f"{i+1}. {appointment.displayAppointmentInfo()}")
                     
                 try:    
-                    appointment_index = int(input("Select the appointment to cancel (enter the number): ")) - 1
+                    appointment_index = int(input("Select the appointment to cancel (enter the number): ").strip()) - 1
                     # Delete the appointment from the veterinary log
                     pet.cancelAppointment(appointment_index + 1)
                     print("Appointment cancelled successfully!")
@@ -427,7 +427,7 @@ class VeterinaryMgmtSys():
 
     # Option 6
     def checkPetVeterinaryLog(self):
-        pet_name = input("Enter the pet's name to check its veterinary log: ")
+        pet_name = input("Enter the pet's name to check its veterinary log: ").strip()
         pet_found = False
         for pet in self.listOfPets:
             if pet.name == pet_name:
@@ -451,6 +451,13 @@ class VeterinaryMgmtSys():
     
     #************************************+
     def __registerVet(self): # Admin Option 1
+
+        if not self.listOfServices:
+            print("\nNo type of service registered.")
+            print("Please make sure the service exists before assigning it to a veterinarian.")
+            input("Press Enter to return to the admin menu.\n")
+            return
+
         input("\nPlease input the veterinarian data: (Enter to continue)")
         name = input("\nName: ").strip()
         contact = input("Phone contact: ").strip()
@@ -458,30 +465,26 @@ class VeterinaryMgmtSys():
         # Create veterinarian
         registeredVet = VeterinaryMgmtSys.personGenerator.createPerson("Veterinarian",name=name,contact=contact)
         
-        if not self.listOfServices:
-            print("\nNo services registered, please register one: ")
-            # If there are not available services, the user will be forced to create one. 
-            self.__registerServiceType()
-        
-        ##L: Modify to make it dynamic.
         # The list of available services is displayed
-        print("\nList of available services:")
-        for indexService, availableServices in enumerate(self.listOfServices):
-            print(f"{indexService+1}. {availableServices}")
-        
-        service = self.listOfServices[int(input("\nSelect a service (enter the number): ").strip())-1]
+        selectedServices = [] # The services that will be applied to the veterinarian
+        servicesForVet = self.listOfServices[:]
+        while servicesForVet:
+            print("\nList of available services:")
+            for indexService, availableServices in enumerate(servicesForVet):
+                print(f"{indexService+1}. {availableServices}")
+            
+            serviceToBeAdded = int(input("\nSelect a service (enter the number): ").strip())-1
+            selectedServices.append(servicesForVet[serviceToBeAdded])
+            del servicesForVet[serviceToBeAdded]
 
-        service_provided = []
-        while True:
-            service = input("Service: ")
-            service_provided.append(service)
-            checkpoint = input("Keep adding services? (y/n): ")
-            if checkpoint == "n":
-                break
+            if servicesForVet:
+                checkpoint = input("Keep adding services? (y/n): ").strip()
+                if checkpoint == "n":
+                    break
 
-        addService = Associate()
-        addService.serviceToVet(registeredVet,service_provided)
-
+        #addService = Associate()
+        #addService.serviceToVet(registeredVet,selectedServices)
+        registeredVet.service_provided = selectedServices
         self.listofVeterinarians.append(registeredVet)
         return registeredVet
     # Admin Option 2
@@ -492,9 +495,9 @@ class VeterinaryMgmtSys():
         pass
     # Admin Option 4
     def __registerServiceType(self):
-        serviceType = input("\nType the name of the service: ")
+        serviceType = input("\nType the name of the service: ").strip()
         self.listOfServices.append(serviceType)
-        input("Service successfully registered. (Enter to continue)")
+        input("\nService successfully registered. (Enter to continue)")
     # Admin Option 5
     def __removeServiceType(self):
         print("Available services:")
@@ -506,7 +509,7 @@ class VeterinaryMgmtSys():
             print(f"{index}. {service}")
 
         try:
-            service_index = int(input("Enter the number of the service to remove: ")) - 1
+            service_index = int(input("Enter the number of the service to remove: ").strip()) - 1
             if 0 <= service_index < len(self.listOfServices):
                 removed_service = self.listOfServices.pop(service_index)
                 print(f"Service '{removed_service}' has been successfully removed.")
@@ -523,12 +526,25 @@ class VeterinaryMgmtSys():
             for service in self.listOfServices:
                 print(f"- {service}")
 
+    @staticmethod
+    def welcomeMessage():
+        print("-------------------------------------------------")
+        print("                    Welcome:                     ")
+        print("                🐾 Happy Paw 🐾                 ")
+        print("        Veterinary Management System App         \n")
+        print("With this console application you'll be able to")
+        print("manage your clients and their pets, schedule and")
+        print("modify appointments, as well as to manage the")
+        print("veterinarians and available services.")
+        print("\n")
+        print("Developed by: Santiago Torres and Lindsey Acourtt")
+        print("-------------------------------------------------\n")
 
     def main_menu(self):
         while True:
-            print("========= main menu ===================")
-            print("1. Register client") # This is supposed to force the registration of a pet as well
-            print("2. Register pet") # This is supposed to force the registration of its owner as well
+            print("========= Main Menu =========")
+            print("1. Register client") 
+            print("2. Register pet") 
             print("3. Schedule appointment")
             print("4. Modify appointment")
             print("5. Cancel appointment")
@@ -536,45 +552,45 @@ class VeterinaryMgmtSys():
             print("7. Admin access")
             print("8. Exit")
             print("9. Tests")
-            opt = input("Choose an option: ")
+            opt = input("Choose an option: ").strip()
             if opt =="1":
                 #1. Register client
                 client = self.registerClient()
-
-                print("You will now associate pets to this client: ")
-                # Temporary list of pets
-                tempPetList = []
+                print("\n---------------------------------------------")
+                print("\nYou will now associate pets to this client: ")
                 while True:
-                    # Modify to check for existing pets
-                    pet = self.registerPet()
-                    # Associate Pet to Owner
-                    joinPetOwner = Associate()
-                    joinPetOwner.petToOwner(client,pet)
-                    # Associate Owner to Pet
-                    joinPetOwner.ownerToPet(pet,client)
-                    tempPetList.append(pet)
-                    checkpoint = input("Add more pets? (y/n): ")
+                    pet = self.registerPet() # Create pet
+                    client.addPet(pet) # Associate pet to owner
+                    pet.addOwner(client) # Associate owner to pet
+                    self.listOfPets.append(pet)
+                    
+                    checkpoint = input("Add more pets? (y/n): ").strip()
                     if checkpoint == "n":
                         break
                 
                 self.listOfClients.append(client)
-                for tempPet in tempPetList:
-                    self.listOfPets.append(tempPet)
+                    
             elif opt == "2":
                 #2. Register pet
                 pet = self.registerPet()
                 
-                print("You will now associate an owner to this pet: ")
-                
-                # Modify to check for existing owners
-                client = self.registerClient()
-                # Associate Owner to Pet
-                joinPetOwner = Associate()
-                joinPetOwner.ownerToPet(pet,client)
-                # Associate Pet to Owner
-                joinPetOwner.petToOwner(client,pet)
+                print("\nYou will now associate an owner to this pet: \n")
+                checkpoint = input("Select existing client? (y/n)").strip()
+                if checkpoint == "y":
+                    print("\nList of registered clients")
+                    for client in self.listOfClients:
+                        print(client)
                     
-                self.listOfClients.append(client)
+                    selectedClient = int(input("\nPlease select client ID: ").strip())
+                    client = next((c for c in self.listOfClients if c.id == selectedClient),None)
+                else:
+                    input("\nPlease create a new client: (Enter to continue)")
+                    client = self.registerClient()
+                    self.listOfClients.append(client)
+                
+                pet.addOwner(client) # Associate Owner to Pet
+                client.addPet(pet) # Associate Pet to Owner
+                
                 self.listOfPets.append(pet)
                 
             elif opt == "3":
@@ -597,7 +613,7 @@ class VeterinaryMgmtSys():
                 #7. Admin access
 
                 # Request for password
-                pw = input("Enter the password: ")
+                pw = getpass(prompt="\nEnter the password to continue: ")
                 if pw == "dev-senior":
                     while True:
                         print("*** Admin menu ***")
@@ -608,7 +624,7 @@ class VeterinaryMgmtSys():
                         print("5. Remove type of service")
                         print("6. Display list of services")
                         print("7. Return")
-                        admin_opt = input("Choose your admin option: ")
+                        admin_opt = input("Choose your admin option: ").strip()
                         if admin_opt == "1":
                             #1. Register veterinarian
                             self.__registerVet()
@@ -631,25 +647,26 @@ class VeterinaryMgmtSys():
                             #5. Return
                             break
                         else:
-                            print("Invalid option.")
+                            input("\nInvalid option, hit Enter to continue.")
                 else:
                     print("\nIncorrect password")
-                    print("Press Enter to continue.")
+                    input("Press Enter to continue.")
                     continue
             elif opt == "8":
                 #8. Exit
-                saveToDB = input("Do you want to save to database? (y/n): ")
+                saveToDB = input("\nDo you want to save to database? (y/n): ").strip()
                 if saveToDB == 'y':
                     f=open("veterinary_database.txt","wb")
                     database = [self.listOfClients,self.listOfPets,self.listofVeterinarians,self.listOfAppointments,self.listOfServices]
                     pickle.dump(database,f)
                     f.close()
-                print("Thanks for using this service.")
+                print("\nThanks for using this service.")
                 break    
             elif opt == "9":
                 self.tests()
             else:
-                print("Option is not valid, please try again.")
+                print("\nOption is not valid, please try again.")
+                input("Enter to continue.")
     
     
     def tests(self):
@@ -681,8 +698,9 @@ if __name__ == "__main__":
     veterinaryManagementSys = VeterinaryMgmtSys()
 
     # Create database for the management system (empty for now)
-    if os.path.exists("veterinary_database.txt"):
-        f = open("veterinary_database.txt","rb")
+    filename = "veterinary_database.txt"
+    if os.path.exists(filename):
+        f = open(filename,"rb")
         database = pickle.load(f)
         print("Database imported")
         veterinaryManagementSys.createDatabase(database[0],database[1],database[2],database[3],database[4])
@@ -690,9 +708,5 @@ if __name__ == "__main__":
     else:
         veterinaryManagementSys.createDatabase([],[],[],[],[])
     
+    veterinaryManagementSys.welcomeMessage()
     veterinaryManagementSys.main_menu()
-            
-        
-
-
-# main_menu()
