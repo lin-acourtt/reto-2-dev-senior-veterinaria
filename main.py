@@ -308,7 +308,7 @@ class VeterinaryMgmtSys():
         petFound = next((p for p in self.listOfPets if p.name == pet.capitalize()),None)
 
         if not petFound:
-            input(f"\nPet: {pet} not found. Returning to main menu. (Enter)\n")
+            input(f"\nPet: {pet.capitalize()} not found. Returning to main menu. (Enter)\n")
             return
         pet = pet.capitalize()
 
@@ -316,7 +316,7 @@ class VeterinaryMgmtSys():
         ownerFound = next((c for c in self.listOfClients if c.name == owner.capitalize()),None)
 
         if not ownerFound:
-            input(f"\nClient: {owner} not found. Returning to main menu. (Enter)\n")
+            input(f"\nClient: {owner.capitalize()} not found. Returning to main menu. (Enter)\n")
             return
         owner = owner.capitalize()
 
@@ -329,7 +329,7 @@ class VeterinaryMgmtSys():
                 break        
         
         if petsAndOwnerRelation == False:
-            print(f"\nThe pet {pet} and owner {owner} are not related.")
+            print(f"\nThe pet {pet.capitalize()} and owner {owner.capitalize()} are not related.")
             input("You will be returned to the main menu (Enter to continue)")
             return
 
@@ -413,160 +413,227 @@ class VeterinaryMgmtSys():
         return appointment
         
     def modifyPetAppmt(self): # Option 4 in main menu
-        pet_name = input("Enter the pet's name to modify its appointment: ").strip()
-        pet_found = False
 
-        # Buscar mascotas con el mismo nombre
+        if not self.listOfAppointments:
+            print("\n----------------------------------------")
+            print("\nThere are not appointments scheduled.")
+            input("You will be returned to the main menu (Enter to continue)\n")
+            return
+        
+        pet_name = input("\nEnter the pet's name to modify its appointment: ").strip()
+
+        # Look for pets with the same name
         pets_with_same_name = [pet for pet in self.listOfPets if pet.name.lower() == pet_name.lower()]
 
         if not pets_with_same_name:
-            print("No pets found with that name.")
+            print("\nNo pets found with that name.\n")
+            input("Returning to main menu. (Enter to continue)\n")
             return
 
-        # Si hay más de una mascota con el mismo nombre, preguntamos por el dueño
+        # If there is more that one pet with the same name, we ask for the owner name
         if len(pets_with_same_name) > 1:
             owner_name = input("Multiple pets with the same name found. Please enter the owner's name: ").strip()
 
-            # Filtrar las mascotas que coinciden con el dueño proporcionado
+            # Get the pets that match with the owner name typed by user
             pets_with_owner = [pet for pet in pets_with_same_name if pet.owner.name.lower() == owner_name.lower()]
 
             if not pets_with_owner:
-                print(f"No pets found for owner {owner_name}.")
+                print(f"\nPet {pet_name.capitalize()} not found for owner {owner_name.capitalize()}.\n")
+                input("Returning to main menu. (Enter to continue)\n")
                 return
         else:
-            # Si solo hay una mascota con ese nombre, usamos directamente esa mascota
+            # If there is only one pet with the selected name, that one will be used without asking for owner name.
             pets_with_owner = pets_with_same_name
 
-        # Ahora, pets_with_owner debería contener las mascotas correctas
+        # We extract the pet infomration from the list
         pet = pets_with_owner[0]
-        print(f"Selected pet: {pet.name} (Owner: {pet.owner.name})")
+        print("----------------------------------------------------")
+        print(f"\nSelected pet: {pet.name} (Owner: {pet.owner.name})")
 
-        # Verificar si el dueño que intenta modificar la cita es el propietario de la mascota
-        owner_name = input(f"Enter the owner's name for {pet.name}: ").strip()
-
-        if owner_name.lower() != pet.owner.name.lower():
-            print(f"Error: {owner_name} is not the owner of {pet.name}. You cannot modify this appointment.")
-            return  # Salir si el dueño no es correcto
-
-        print(f"Appointments for {pet.name}:")
         if not pet.veterinaryLog:
-            print("No appointments found.")
+            input("\nNo appointments found for this pet. (Enter to continue)\n")
             return
 
+        print(f"\nAppointments for {pet.name}:")
+        print("------------------")
         for i, appointment in enumerate(pet.veterinaryLog):
             print(f"{i + 1}. {appointment.displayAppointmentInfo()}")
+            print("------------------")
 
         try:
-            appointment_index = int(input("Select the appointment to modify (enter the number): ")) - 1
+            appointment_index = int(input("\nSelect the appointment to modify (enter the number): ").strip()) - 1
             appointment_to_modify = pet.veterinaryLog[appointment_index]
 
             # Modify the appointment
             print("Modify appointment details:")
 
             # Modify date
-            new_date = input(f"Current Date: {appointment_to_modify.date}. Enter new date (YYYY-MM-DD) or press Enter to Keep: ")
+            new_date = input(f"Current Date: {appointment_to_modify.date}. Enter new date (YYYY-MM-DD) or press Enter to Keep: ").strip()
             if new_date == "":
                 new_date = appointment_to_modify.date 
             else:
                 new_date = datetime.strptime(new_date, "%Y-%m-%d").date()
 
             # Modify time
-            new_time = input(f"Current Time: {appointment_to_modify.time}. Enter new time (HH:MM) or press Enter to keep: ")
+            new_time = input(f"Current Time: {appointment_to_modify.time}. Enter new time (HH:MM) or press Enter to keep: ").strip()
             if new_time == "":  # No input, keep the same
                 new_time = appointment_to_modify.time
             else:
                 new_time = datetime.strptime(new_time, "%H:%M").time()
 
             # Modify service
-            new_service = input(f"Current Service: {appointment_to_modify.service}. Enter new service or press Enter to keep: ")
-            if new_service == "":
+
+            # The list of available services is displayed
+            print("\nList of available services:")
+            for indexService, availableServices in enumerate(self.listOfServices):
+                print(f"{indexService+1}. {availableServices}")
+
+            selectedService = input(f"\nSelect a service, current service: {appointment_to_modify.service}. Type the number or press Enter to keep: ").strip()
+            
+            if selectedService == "":
                 new_service = appointment_to_modify.service
+            else:
+                new_service = self.listOfServices[int(selectedService)-1]
 
             # Modify veterinarian
-            new_veterinarian_name = input(f"Current Veterinarian: {appointment_to_modify.veterinarian.name}. Enter new veterinarian or press Enter to Keep: ")
-            if new_veterinarian_name == "":
+
+            # Find veterinaries that match this service
+            availableVets = []
+            for indexVet, vet in enumerate(self.listofVeterinarians):
+                if new_service in vet.service_provided:
+                    availableVets.append([indexVet,vet])
+
+            if not availableVets:
+                print(f"\nThere are not veterinarians for the service: {new_service}.")
+                input("You will be returned to the main menu (Enter to continue)")
+                return
+
+            print(f"\nList of available veterinarians for serivice '{new_service}':")
+            for indexAvaVet, vet in enumerate(availableVets):
+                print(f"{indexAvaVet+1}. {vet[1].name}")
+            
+            selectedVet = input(f"\nSelect a veterinarian, current vet: {appointment_to_modify.veterinarian.name}, type the number or press Enter to keep:  ").strip()
+
+            if selectedVet == "":
                 new_veterinarian = appointment_to_modify.veterinarian
             else:
-                # Ensure new veterinarian exists
-                new_veterinarian = None
-                for vet in self.listofVeterinarians:
-                    if vet.name.lower() == new_veterinarian_name.lower():
-                        new_veterinarian = vet
-                        break
+                new_veterinarian = availableVets[int(selectedVet)-1][1]
+            
+            # So far we have the information of the appointment in the pets veterinary log's index: appointment_to_modify = pet.veterinaryLog[appointment_index]
+            # We also need the index of the same appoint but in the registry of all appointments: self.listOfAppointments
 
-                if not new_veterinarian:
-                    print("Error: Veterinarian not found.")
-                    return
+            for idxTotalRegistry,objTotalRegistry in enumerate(self.listOfAppointments):
+                if id(objTotalRegistry) == id(appointment_to_modify):
+                    indexToModify = idxTotalRegistry
 
-            # Update the appointment
+            # Update the appointment in the total registry
+            self.listOfAppointments[indexToModify].modifyAppointment(date=new_date, time=new_time, service=new_service, veterinarian=new_veterinarian)
+
+            # Update the appointment in the pet's veterinary log
             appointment_to_modify.modifyAppointment(date=new_date, time=new_time, service=new_service, veterinarian=new_veterinarian)
-            print("Appointment modified successfully!")
-        except (ValueError, IndexError):
-            print("Invalid input. Please make sure to select a valid appointment number.")    
-    
-        #delete S: Only the appointment object is being updated... it also needs to be updated in the pet's veterinary log
-        # Fin de la función
+            input("\nAppointment modified successfully! (Enter to return to menu)\n")
+        except: # (ValueError, IndexError):
+            input("\nSomething failed. Cancelling operation. (Enter to continue)\n")    
     
     # Option 5
     def cancelPetAppmt(self):
-        pet_name = input("Enter the pet's name to cancel its appointment: ").strip()
-        pet_found = False
-        for pet in self.listOfPets:
-            if pet.name.lower() == pet_name.lower():  
-                pet_found = True
-                owner_name = input(f"Enter the owner's name for {pet.name}: ").strip()
-
-                if owner_name.lower() != pet.owner.name.lower():
-                    print(f"Error: {owner_name} is not the owner of {pet.name}. You cannot cancel this appointment.")
-                    return
-
-                print(f"Appointments for {pet.name}:")
-                if not pet.veterinaryLog:
-                    print("No appointments to cancel.")
-                    return
-
-                for i, appointment in enumerate(pet.veterinaryLog):
-                    print(f"{i + 1}. {appointment.displayAppointmentInfo()}")
-
-                try:
-                    appointment_index = int(input("Select the appointment to cancel (enter the number): ")) - 1
-                    if 0 <= appointment_index < len(pet.veterinaryLog):
-                        pet.cancelAppointment(appointment_index + 1)
-                        print("Appointment cancelled successfully!")
-                    else:
-                        print("Invalid selection.")
-                except (ValueError, IndexError):
-                    print("Invalid input. Select a valid appointment number.")
-
-                break
         
-        #delete S: The appointment is being deleted only in the pet's veterinary log, it should also be deleted from self.ListOfAppointments
-        if not pet_found:
-            print("Pet not found.")
+        if not self.listOfAppointments:
+            print("\n----------------------------------------")
+            print("\nThere are not appointments scheduled.")
+            input("You will be returned to the main menu (Enter to continue)\n")
+            return
+        
+        pet_name = input("\nEnter the pet's name to cancel an appointment: ").strip()
+        
+        list_of_pet_names = [p.name.lower() for p in self.listOfPets]
+
+        if pet_name.lower() in list_of_pet_names:
+            # Generate list of clients
+            list_of_pet_owner_names = [c.name.lower() for c in self.listOfClients if (pet_name.lower() in [p.name.lower() for p in c.list_of_pets])]
+            
+            owner_name = input("Enter the owner's name: ").strip()
+            
+            if owner_name.lower() in list_of_pet_owner_names:
+                
+                pet_obj_list = [p for p in self.listOfPets if (p.name.lower() == pet_name.lower() and p.owner.name.lower() == owner_name.lower())]
+                pet_obj = pet_obj_list[0]
+
+                if pet_obj.veterinaryLog:
+                    print(f"\nAppointments for {pet_obj.name}:")
+                    print("------------------")
+                    for i, appointment in enumerate(pet_obj.veterinaryLog):
+                        print(f"{i + 1}. {appointment.displayAppointmentInfo()}")
+                        print("------------------")
+                    
+                    try:
+                        appointment_index = int(input("\nSelect the appointment to cancel (enter the number): ").strip()) 
+                        if 0 < appointment_index <= len(pet_obj.veterinaryLog):
+                            # Before cancelling the appointment, we need to find it in the total registry
+                            for idxTotalRegistry,objTotalRegistry in enumerate(self.listOfAppointments):
+                                if id(objTotalRegistry) == id(pet_obj.veterinaryLog[appointment_index-1]):
+                                    indexToRemove = idxTotalRegistry
+                            
+                            # Remove the appointment from the total registry
+                            del self.listOfAppointments[indexToRemove]
+                            # Remove the appointment from the pets veterinary log
+                            pet_obj.cancelAppointment(appointment_index)
+                            input("\nAppointment cancelled successfully! Press enter to return to the main menu.\n")
+                        else:
+                            raise ValueError
+                    except (ValueError, IndexError):
+                        input("\nInvalid input. Aborting operation. Enter to return to main menu.\n")
+                        return 
+                else:
+                    input(f"\nVeterinary log not found for pet: '{pet_obj.name}'. Press enter to return.")
+                    return
+            else:
+                input(f"\nOwner: {owner_name.capitalize()} not found for pet: {pet_name.capitalize()}. Returning to main menu. Enter to continue.\n")
+                return
+        else:
+            input(f"\nPet '{pet_name.capitalize()}' not found. (Enter to return)")
+            return
 
     # Option 6
     def checkPetVeterinaryLog(self):
-        pet_name = input("Enter the pet's name to check its veterinary log: ").strip()
-        pet_found = False
-        for pet in self.listOfPets:
-            if pet.name == pet_name:
-                pet_found = True
-                owner_name = input(f"Enter the owner's name for {pet.name}: ").strip()
+        if not self.listOfAppointments:
+            print("\n----------------------------------------")
+            print("\nThere are not appointments scheduled.")
+            input("You will be returned to the main menu (Enter to continue)\n")
+            return
+        
+        pet_name = input("\nEnter the pet's name to check their appointments: ").strip()
+        
+        list_of_pet_names = [p.name.lower() for p in self.listOfPets]
 
-                if owner_name.lower() != pet.owner.name.lower():
-                    print(f"Error: {owner_name} is not the owner of {pet.name}. You cannot access the veterinary log.")
-                    return  # Salir si el dueño no es correcto
+        if pet_name.lower() in list_of_pet_names:
+            # Generate list of clients
+            list_of_pet_owner_names = [c.name.lower() for c in self.listOfClients if (pet_name.lower() in [p.name.lower() for p in c.list_of_pets])]
+            
+            owner_name = input("Enter the owner's name: ").strip()
+            
+            if owner_name.lower() in list_of_pet_owner_names:
                 
-                print(f"Veterinary log for {pet.name}:")
-                if pet.veterinaryLog:
-                    for log in pet.veterinaryLog:
-                        print(log.displayAppointmentInfo())
+                pet_obj_list = [p for p in self.listOfPets if (p.name.lower() == pet_name.lower() and p.owner.name.lower() == owner_name.lower())]
+                pet_obj = pet_obj_list[0]
+
+                if pet_obj.veterinaryLog:
+                    print(f"\nAppointments for {pet_obj.name}:")
+                    print("------------------")
+                    for i, appointment in enumerate(pet_obj.veterinaryLog):
+                        print(f"{i + 1}. {appointment.displayAppointmentInfo()}")
+                        print("------------------")
+                    
+                    input("\nPress enter to continue.")
                 else:
-                    print("No appointments found.")
-                break
-    
-        if not pet_found:
-            print("Pet not found.")
+                    input(f"\nVeterinary log not found for pet: '{pet_obj.name}'. Press enter to return.")
+                    return
+            else:
+                input(f"\nOwner: {owner_name.capitalize()} not found for pet: {pet_name.capitalize()}. Returning to main menu. Enter to continue.\n")
+                return
+        else:
+            input(f"\nPet '{pet_name.capitalize()}' not found. (Enter to return)")
+            return
     
     #************************************+
     def __registerVet(self): # Admin Option 1
@@ -613,7 +680,7 @@ class VeterinaryMgmtSys():
                 input("\nInvalid input, try again. (Enter to continue)\n")
             else:
                 if serviceToBeAdded == -1: # Cancel operation
-                    input(f"\nThe veterinarian {registeredVet.name} was not registered. (Enter to continue)\n")
+                    print(f"\nThe veterinarian {registeredVet.name} was not registered. (Enter to continue)\n")
                     return
                 else:
                     selectedServices.append(servicesForVet[serviceToBeAdded])
@@ -627,8 +694,6 @@ class VeterinaryMgmtSys():
                         input("\nNo more available services. (Enter to continue)\n")
                         break
 
-        #addService = Associate()
-        #addService.serviceToVet(registeredVet,selectedServices)
         registeredVet.service_provided = selectedServices
         self.listofVeterinarians.append(registeredVet)
         print("\nVeterinarian successfully registered.")
@@ -637,28 +702,41 @@ class VeterinaryMgmtSys():
         return registeredVet
     # Admin Option 2
     def __removeVet(self):
-        print("List of Veterinarians:")
+        
         if not self.listofVeterinarians:
-            print("No veterinarians to remove.")
+            input("\nNo veterinarians to remove. Enter to return.")
             return
 
+        print("\n**********************")
+        print("\nList of Veterinarians:\n")
         for i, vet in enumerate(self.listofVeterinarians, start=1):
             print(f"{i}. {vet.name} - {vet.contact}")
 
         try:
-            vet_index = int(input("Select the veterinarian to remove (enter the number): ")) - 1
+            vet_index = int(input("\nSelect the veterinarian to remove (enter the number): ")) - 1
             if 0 <= vet_index < len(self.listofVeterinarians):
                 removed_vet = self.listofVeterinarians.pop(vet_index)
-                print(f"Veterinarian '{removed_vet.name}' has been successfully removed.")
+                input(f"\nVeterinarian '{removed_vet.name}' has been successfully removed. Enter to return.")
             else:
-                print("Invalid selection.")
+                raise ValueError
         except (ValueError, IndexError):
-            print("Invalid input. Select a valid veterinarian.")    
-
+            input("\nInvalid input. You will be returned to the admin menu.")  
+            return  
 
     # Admin Option 3
     def __displayListOfVets(self):
-        pass
+        
+        if not self.listofVeterinarians:
+            input("\nNo veterinarians to remove. Enter to return.")
+            return
+
+        print("\n**********************")
+        print("\nList of Veterinarians:\n")
+        for i, vet in enumerate(self.listofVeterinarians, start=1):
+            print(f"{i}. {vet}")
+        
+        input("\nPress enter to continue.")
+        return
     
     # Admin Option 4
     def __registerServiceType(self):
@@ -682,31 +760,86 @@ class VeterinaryMgmtSys():
 
     # Admin Option 5
     def __removeServiceType(self):
-        print("Available services:")
+        
         if not self.listOfServices:
-            print("No services available to remove.")
+            input("\nNo services available to remove. Press enter to return.")
             return
         
+        print("\n*******************")
+        print("\nAvailable services:")
         for index, service in enumerate(self.listOfServices, start=1):
             print(f"{index}. {service}")
 
         try:
-            service_index = int(input("Enter the number of the service to remove: ").strip()) - 1
+            service_index = int(input("\nEnter the number of the service to remove: ").strip()) - 1
             if 0 <= service_index < len(self.listOfServices):
                 removed_service = self.listOfServices.pop(service_index)
-                print(f"Service '{removed_service}' has been successfully removed.")
+                
+                # Besides removing the service from the list of services, it is also necessary to remove 
+                # the service from the veterinarians that have it assigned.
+
+                for vet in self.listofVeterinarians:
+                    if removed_service in vet.service_provided:
+                        vet.service_provided.remove(removed_service)
+
+                input(f"\nService '{removed_service}' has been successfully removed. Press enter to continue.")
             else:
-                print("Invalid selection.")
+                raise ValueError
         except ValueError:
-            print("Invalid input. Please enter a valid number.")
+            input("\nInvalid input. You will be returned to the admin menu.")
+            return
+
     # Admin Option 6
     def __displayListOfServices(self):
-        print("List of available services:")
+        
         if not self.listOfServices:
-            print("No services available.")
+            input("\nNo services available. You will be returned to the main menu.")
+            return
         else:
+            print("\n***************************")
+            print("\nList of available services:\n")
             for service in self.listOfServices:
                 print(f"- {service}")
+            
+            input("\nPress enter to continue.")
+            return
+        
+    def __displayPrivateData(self):
+        print("\n*********************************************************")
+        print("\nRegistered data")
+        print("\n----------")
+        
+        print("Clients")
+        print("----------")
+        for client in self.listOfClients:
+            print(client)
+        
+        print("\n----------")
+        print("Pets")
+        print("----------")
+        for pet in self.listOfPets:
+            print(f"\n{pet}")
+        
+        print("\n----------")
+        print("Appointments")
+        print("----------")
+        for appointment in self.listOfAppointments:
+            print(appointment) 
+        
+        print("\n----------")
+        print("Veterinarians")
+        print("----------")
+        for vet in self.listofVeterinarians:
+            print(vet)
+        
+        print("\n----------")
+        print("Services")
+        print("----------")
+        for service in self.listOfServices:
+            print(service)
+        
+        print("\n*********************************************************")
+        input("\nPress enter to continue.")
 
     @staticmethod
     def welcomeMessage():
@@ -724,7 +857,7 @@ class VeterinaryMgmtSys():
 
     def main_menu(self):
         while True:
-            print("========= Main Menu =========")
+            print("\n========= Main Menu =========")
             print("1. Register client") 
             print("2. Register pet") 
             print("3. Schedule appointment")
@@ -734,8 +867,7 @@ class VeterinaryMgmtSys():
             print("7. Display clients and pet information")
             print("8. Admin access")
             print("9. Exit")
-            print("10. Tests")
-            opt = input("Choose an option: ").strip()
+            opt = input("\nChoose an option: ").strip()
             if opt =="1":
                 #1. Register client
                 client = self.registerClient()
@@ -868,15 +1000,16 @@ class VeterinaryMgmtSys():
                 pw = getpass(prompt="\nEnter the password to continue: ")
                 if pw == "dev-senior":
                     while True:
-                        print("*** Admin menu ***")
+                        print("\n*** Admin menu ***")
                         print("1. Register veterinarian")
                         print("2. Remove veterinarian")
                         print("3. Display list of veterinarians")
                         print("4. Register type of service")
                         print("5. Remove type of service")
                         print("6. Display list of services")
-                        print("7. Return")
-                        admin_opt = input("Choose your admin option: ").strip()
+                        print("7. Display the whole registry")
+                        print("8. Return")
+                        admin_opt = input("\nChoose your admin option: ").strip()
                         if admin_opt == "1":
                             #1. Register veterinarian
                             self.__registerVet()
@@ -895,8 +1028,11 @@ class VeterinaryMgmtSys():
                         elif admin_opt == "6":
                             #6. Display list of services
                             self.__displayListOfServices()
-                        elif admin_opt == "7":
-                            #5. Return
+                        elif admin_opt == '7':
+                            #7. Display the whole registry
+                            self.__displayPrivateData()
+                        elif admin_opt == "8":
+                            #8. Return
                             break
                         else:
                             input("\nInvalid option, hit Enter to continue.")
@@ -912,37 +1048,12 @@ class VeterinaryMgmtSys():
                     database = [self.listOfClients,self.listOfPets,self.listofVeterinarians,self.listOfAppointments,self.listOfServices]
                     pickle.dump(database,f)
                     f.close()
-                print("\nThanks for using this service.")
+                print("\nThanks for using this service.\n")
                 break    
-            elif opt == "10":
-                self.tests()
             else:
                 print("\nOption is not valid, please try again.")
                 input("Enter to continue.")
     
-    
-    def tests(self):
-        print("Registered data")
-        print("----------")
-        print("Clients")
-        for client in self.listOfClients:
-            print(client)
-        print("----------")
-        print("Pets")
-        for pet in self.listOfPets:
-            print(pet)
-        print("----------")
-        print("Veterinarians")
-        for vet in self.listofVeterinarians:
-            print(vet)
-        print("----------")
-        print("Appointments")
-        for appointment in self.listOfAppointments:
-            print(appointment) 
-        print("----------")
-        print("Services")
-        for service in self.listOfServices:
-            print(service)
 
 if __name__ == "__main__":
 
