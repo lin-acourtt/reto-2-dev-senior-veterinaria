@@ -9,7 +9,7 @@ Los autores somos **Lindsey Acourtt** y **Santiago Torres**
 
 **El objetivo de este proyecto es desarrollar una aplicacion basada en consola, en la cual podamos interactuar por terminal, enfocada en gestionar clientes y mascotas, gestionar citas, mostrar historial de servicios, etc. para una veterinaria.** 
 
-### Menu principal. 
+### Menu principal
 
 Una vez el usuario inicia el programa, se presentará el siguiente menu. El usuario debe ingresar el número de la función que desea llevar a cabo. Si ingresa algo diferente al número de una de las funciones disponibles, el usuario tendrá que intentarlo de nuevo. 
 
@@ -47,7 +47,7 @@ Choose an option:
 
 ```
 
-### Funciones del programa principal 🔍 🔎
+**Funciones del programa principal 🔍 🔎**
 
 #### Opción 1 y 2: "Registrar cliente" y "Registrar mascota
 
@@ -286,5 +286,12 @@ Salon
 Press enter to continue.
 ```
 
+### Base de datos
+
+Por medio del uso de la librería pickle se logra la persistencia de datos, por lo que al iniciar la aplicación, se puede volver a cargar la información con la que se había trabajado anteriormente. Esta base de datos se guarda en el archivo `veterinary_database.txt`.
+
+### Versión de Python
+
+Desarrollado en Python 3.13.0.
 
 
