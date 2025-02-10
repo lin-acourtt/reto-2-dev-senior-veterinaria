@@ -1042,7 +1042,7 @@ class VeterinaryMgmtSys():
                     continue
             elif opt == "9":
                 #8. Exit
-                saveToDB = input("\nDo you want to save to databas NOOOOOOO (y/n): ").strip()
+                saveToDB = input("\nDo you want to save to databas (y/n): ").strip()
                 if saveToDB == 'y':
                     f=open("veterinary_database.txt","wb")
                     database = [self.listOfClients,self.listOfPets,self.listofVeterinarians,self.listOfAppointments,self.listOfServices]
