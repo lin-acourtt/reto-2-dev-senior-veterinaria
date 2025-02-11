@@ -293,12 +293,14 @@ class VeterinaryMgmtSys():
         if not self.listOfServices:
             print("\n------------------------------------------------------------")
             print("\nThere are not available services to schedule an appointment.")
+            print("\nPlease contact your admin to register a service type.")
             input("You will be returned to the main menu (Enter to continue)\n")
             return
         
         if not self.listofVeterinarians:
             print("\n-----------------------------------------------------------------")
             print("\nThere are not available veterinarians to schedule an appointment.")
+            print("\nPlease contact your admin to register a veterinarian.")
             input("You will be returned to the main menu (Enter to continue)\n")
             return
 
@@ -361,6 +363,7 @@ class VeterinaryMgmtSys():
 
         if not availableVets:
             print(f"\nThere are not veterinarians for the service: {service}.")
+            print("\nPlease contact your admin to register a veterinarian for this service type.")
             input("You will be returned to the main menu (Enter to continue)")
             return
 
@@ -395,7 +398,7 @@ class VeterinaryMgmtSys():
                 time = datetime.strptime(time, "%H:%M")
                 
             except:
-                cancel = input("\nIncorrect formats, please try again (Any key to continue, 0 to cancel)\n")
+                cancel = input("\nIncorrect formats, please try again (Any key to continue, 0 to cancel)\n").strip()
                 if cancel == '0':
                     input("\nAppointment not scheduled. (Enter to continue)\n")
                     return
@@ -505,6 +508,7 @@ class VeterinaryMgmtSys():
 
             if not availableVets:
                 print(f"\nThere are not veterinarians for the service: {new_service}.")
+                print("\nPlease contact your admin to register a veterinarian for this service type.")
                 input("You will be returned to the main menu (Enter to continue)")
                 return
 
@@ -1042,12 +1046,12 @@ class VeterinaryMgmtSys():
                     continue
             elif opt == "9":
                 #8. Exit
-                saveToDB = input("\nDo you want to save to databas (y/n): ").strip()
-                if saveToDB == 'y':
-                    f=open("veterinary_database.txt","wb")
-                    database = [self.listOfClients,self.listOfPets,self.listofVeterinarians,self.listOfAppointments,self.listOfServices]
-                    pickle.dump(database,f)
-                    f.close()
+                
+                # Save DB
+                f=open("veterinary_database.txt","wb")
+                database = [self.listOfClients,self.listOfPets,self.listofVeterinarians,self.listOfAppointments,self.listOfServices]
+                pickle.dump(database,f)
+                f.close()
                 print("\nThanks for using this service.\n")
                 break    
             else:
@@ -1060,13 +1064,11 @@ if __name__ == "__main__":
     # Create the object for the management system
     veterinaryManagementSys = VeterinaryMgmtSys()
 
-    # Create database for the management system (empty for now)
-    useDB = input("Use DB?: ")
+    # Load DB
     filename = "veterinary_database.txt"
-    if os.path.exists(filename) and useDB == "y":
+    if os.path.exists(filename):
         f = open(filename,"rb")
         database = pickle.load(f)
-        print("Database imported")
         veterinaryManagementSys.createDatabase(database[0],database[1],database[2],database[3],database[4])
         f.close()
     else:
