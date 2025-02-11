@@ -290,12 +290,7 @@ Press enter to continue.
 
 Por medio del uso de la librería pickle se logra la persistencia de datos, por lo que al iniciar la aplicación, se puede volver a cargar la información con la que se había trabajado anteriormente. Esta base de datos se guarda en el archivo `veterinary_database.txt`.
 
-### Versión de Python
-
-Desarrollado en Python 3.13.0.
-
-### Funciones del programa 
-Sistema de Gestión Veterinaria
+### Sistema de Gestión Veterinaria
 Este proyecto implementa un sistema para la gestión de clientes, mascotas, citas y veterinarios, con la capacidad de registrar, modificar y visualizar información de manera eficiente.
 
 Clases principales
@@ -385,5 +380,11 @@ from getpass import getpass          ->> To type passwords
 
 
 ``` 
+
+### Versión de Python
+
+Desarrollado en Python 3.13.0.
+
+
 
 
