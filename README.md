@@ -364,7 +364,6 @@ __displayListOfServices: Muestra la lista de servicios disponibles.
 __displayPrivateData: Muestra información privada del sistema.
 welcomeMessage: Muestra el mensaje de bienvenida al sistema.
 main_menu: Muestra el menú principal de opciones para el usuario.
-
 ```
 
 
@@ -377,12 +376,12 @@ from datetime import datetime        ->> To manage date and time
 import os.path                       ->> To check if the database file exists in the folder
 import pickle                        ->> To load/save database
 from getpass import getpass          ->> To type passwords
-
-
 ```
 
 ### Versión de Python
 
 Desarrollado en Python 3.13.0.
 
+### Vídeo complementario
 
+La explicación del proyecto se encuentra en el siguiente link: [Vídeo - Reto 2 - Dev Senior - Python C1: Santiago Torres y Lindsey Acourtt](https://www.youtube.com/watch?v=QL_gRTRdLq0).
