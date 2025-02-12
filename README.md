@@ -60,7 +60,7 @@ El programa pide al usuario los siguientes datos para registrar un cliente:
 Y para registrar una mascota
 
 * Nombre
-* Especia
+* Especie
 * Raza
 * Edad
 
@@ -289,6 +289,97 @@ Press enter to continue.
 ### Base de datos
 
 Por medio del uso de la librería pickle se logra la persistencia de datos, por lo que al iniciar la aplicación, se puede volver a cargar la información con la que se había trabajado anteriormente. Esta base de datos se guarda en el archivo `veterinary_database.txt`.
+
+### Sistema de Gestión Veterinaria
+Este proyecto implementa un sistema para la gestión de clientes, mascotas, citas y veterinarios, con la capacidad de registrar, modificar y visualizar información de manera eficiente.
+
+Clases principales
+
+```
+People
+__init__: Inicializa la persona con la información básica.
+displayContactInfo: Muestra la información de contacto de la persona.
+
+Pets
+__init__: Inicializa la mascota.
+scheduleAppointment: Programa una cita para la mascota.
+cancelAppointment: Cancela la cita programada.
+displayPetInfo: Muestra la información de la mascota.
+displayVeterinaryLog: Muestra el historial veterinario de la mascota.
+
+Appointments
+__init__: Inicializa una cita.
+modifyAppointment: Modifica una cita existente.
+displayAppointmentInfo: Muestra la información de la cita.
+
+Client
+__init__: Inicializa un cliente.
+displayContactInfo: Muestra la información de contacto del cliente.
+addPet: Añade una mascota al cliente.
+__str__: Representación en cadena del cliente.
+__repr__: Representación más detallada del cliente.
+
+Veterinarian
+__init__: Inicializa al veterinario.
+displayContactInfo: Muestra la información de contacto del veterinario.
+addService: Añade un servicio a la lista del veterinario.
+__str__: Representación en cadena del veterinario.
+__repr__: Representación más detallada del veterinario.
+
+FactoryOfPeople
+createPerson: Crea una nueva persona.
+
+Appointment
+__init__: Inicializa una cita.
+modifyAppointment: Modifica una cita existente.
+displayAppointmentInfo: Muestra la información de la cita.
+__str__: Representación en cadena de la cita.
+__repr__: Representación más detallada de la cita.
+
+Pet
+__init__: Inicializa una mascota.
+scheduleAppointment: Programa una cita para la mascota.
+cancelAppointment: Cancela una cita programada.
+displayPetInfo: Muestra la información de la mascota.
+displayVeterinaryLog: Muestra el historial veterinario.
+addOwner: Asocia un propietario a la mascota.
+__str__: Representación en cadena de la mascota.
+__repr__: Representación más detallada de la mascota.
+
+VeterinaryMgmtSys
+__new__: Implementa el patrón Singleton para garantizar una sola instancia del sistema.
+createDatabase: Crea la base de datos del sistema.
+registerClient: Registra un cliente en el sistema.
+registerPet: Registra una mascota en el sistema.
+schedulePetAppmt: Programa una cita para una mascota.
+modifyPetAppmt: Modifica una cita para una mascota.
+cancelPetAppmt: Cancela una cita para una mascota.
+checkPetVeterinaryLog: Verifica el historial veterinario de una mascota.
+__registerVet: Registra un veterinario en el sistema.
+__removeVet: Elimina un veterinario del sistema.
+__displayListOfVets: Muestra la lista de veterinarios registrados.
+__registerServiceType: Registra un tipo de servicio.
+__removeServiceType: Elimina un tipo de servicio.
+__displayListOfServices: Muestra la lista de servicios disponibles.
+__displayPrivateData: Muestra información privada del sistema.
+welcomeMessage: Muestra el mensaje de bienvenida al sistema.
+main_menu: Muestra el menú principal de opciones para el usuario.
+
+```
+
+
+### Librerias usadas
+
+Las librerias usadas son:
+```
+from abc import ABC, abstractmethod  ->> To create interfaces
+from datetime import datetime        ->> To manage date and time
+import os.path                       ->> To check if the database file exists in the folder
+import pickle                        ->> To load/save database
+from getpass import getpass          ->> To type passwords
+
+
+```
 
 ### Versión de Python
 
